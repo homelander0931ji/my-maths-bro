@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "io.github.homelander0931ji.twa",
+        "sha256_cert_fingerprints": ["2F:32:3F:20:BD:D9:1A:41:51:23:3C:E3:01:29:79:85:FC:66:3B:94:03:6D:BB:3C:28:58:C1:BB:57:29:BD:B2"]
+      }
+    }]
