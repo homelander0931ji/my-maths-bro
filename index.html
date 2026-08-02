@@ -1,0 +1,3701 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ganit Abhyaas — Speed Math Trainer</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#101B2E">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ganit Abhyaas">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#101B2E;
+    --navy2:#16233B;
+    --chalk:#F1ECDD;
+    --amber:#E3A93B;
+    --teal:#37918C;
+    --red:#D9564C;
+    --green:#4FA872;
+    --line: rgba(241,236,221,0.08);
+  }
+  body[data-theme="paper"]{
+    --navy:#EFE9D8;
+    --navy2:#E3DBC4;
+    --chalk:#2B2418;
+    --amber:#B5651D;
+    --teal:#2E7D6B;
+    --red:#C0392B;
+    --green:#3C8C4A;
+    --line: rgba(43,36,24,0.10);
+  }
+  body[data-theme="forest"]{
+    --navy:#10241C;
+    --navy2:#163A2B;
+    --chalk:#EAF3EA;
+    --amber:#D9A441;
+    --teal:#4FB08C;
+    --red:#E0645A;
+    --green:#7BC97E;
+    --line: rgba(234,243,234,0.08);
+  }
+  body[data-theme="sunset"]{
+    --navy:#221A2E;
+    --navy2:#332444;
+    --chalk:#FBEFE3;
+    --amber:#F2A65A;
+    --teal:#C4587A;
+    --red:#E4574C;
+    --green:#6FBF8B;
+    --line: rgba(251,239,227,0.08);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent 27px, var(--line) 27px, var(--line) 28px),
+      repeating-linear-gradient(90deg, transparent, transparent 27px, var(--line) 27px, var(--line) 28px),
+      var(--navy);
+    color:var(--chalk);
+    transition: background-color .2s ease, color .2s ease;
+    font-family: Georgia, 'Noto Sans Devanagari', 'Segoe UI', sans-serif;
+    min-height:100vh;
+  }
+  .num, .timer, .stat-num{
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  header{
+    padding: 30px 20px 16px;
+    text-align:center;
+    background: linear-gradient(180deg, rgba(0,0,0,0.12), transparent);
+  }
+  header h1{
+    margin:0;
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 2.1rem;
+    letter-spacing:0.5px;
+    color: var(--amber);
+    font-weight:700;
+    text-shadow: 0 2px 18px rgba(227,169,59,0.25);
+  }
+  header p{
+    margin:6px 0 0;
+    color: rgba(241,236,221,0.65);
+    font-size:0.95rem;
+  }
+  .theme-row{ display:flex; justify-content:center; gap:10px; margin-top:14px; }
+  .theme-dot{
+    width:26px; height:26px; border-radius:50%;
+    border:2px solid rgba(241,236,221,0.3);
+    cursor:pointer;
+    padding:0;
+  }
+  .theme-dot.active{ border-color:var(--amber); box-shadow:0 0 0 2px var(--amber); }
+  nav{
+    position:sticky; top:0;
+    background:var(--navy);
+    border-bottom:1px solid var(--line);
+    padding:12px 18px;
+    z-index:20;
+  }
+  .nav-bar-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .nav-current{
+    font-family:'Fraunces', Georgia, serif;
+    font-weight:600;
+    font-size:1.05rem;
+    color:var(--amber);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .kebab-btn{
+    flex-shrink:0;
+    width:38px; height:38px;
+    border-radius:50%;
+    background:transparent;
+    border:1px solid rgba(241,236,221,0.28);
+    color:var(--chalk);
+    font-size:1.3rem;
+    line-height:1;
+    letter-spacing:1px;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition: all .15s ease;
+  }
+  .kebab-btn:hover, .kebab-btn.open{ border-color:var(--amber); color:var(--amber); background:rgba(227,169,59,0.08); }
+  .nav-menu-backdrop{
+    position:fixed; inset:0;
+    background:rgba(0,0,0,0.4);
+    z-index:19;
+    animation: splashFade .15s ease both;
+  }
+  .nav-menu{
+    position:absolute;
+    right:18px; top:60px;
+    background:var(--navy2);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:8px;
+    min-width:230px;
+    max-height:calc(100vh - 90px);
+    overflow-y:auto;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.45);
+    z-index:21;
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+    animation: cardIn .18s cubic-bezier(.2,.8,.3,1) both;
+  }
+  .nav-menu-item{
+    background:transparent;
+    border:none;
+    text-align:left;
+    color:var(--chalk);
+    padding:11px 14px;
+    border-radius:9px;
+    cursor:pointer;
+    font-size:0.92rem;
+    font-weight:600;
+    transition: background .12s ease, color .12s ease;
+  }
+  .nav-menu-item:hover{ background:rgba(227,169,59,0.1); }
+  .nav-menu-item.active{ background:var(--amber); color:var(--navy); }
+  .nav-menu-divider{ height:1px; background:var(--line); margin:6px 6px; flex-shrink:0; }
+  .nav-menu-danger{ color:var(--red); }
+  .nav-menu-danger:hover{ background:rgba(217,86,76,0.12); }
+  .pw-modal-backdrop{
+    position:fixed; inset:0;
+    background:rgba(0,0,0,0.55);
+    z-index:30;
+    animation: splashFade .15s ease both;
+  }
+  .pw-modal.card{
+    position:fixed;
+    left:50%; top:50%;
+    z-index:31;
+    width:min(340px, 88vw);
+    max-height:85vh;
+    overflow-y:auto;
+    margin:0;
+    animation: pwModalIn .18s cubic-bezier(.2,.8,.3,1) both;
+  }
+  @keyframes pwModalIn{
+    from{ opacity:0; transform:translate(-50%,-50%) translateY(8px); }
+    to{ opacity:1; transform:translate(-50%,-50%) translateY(0); }
+  }
+  .pw-modal-actions{ display:flex; gap:10px; margin-top:18px; }
+  .pw-modal-actions .btn{ flex:1; text-align:center; margin:0; }
+  .pw-error{
+    color:var(--red);
+    font-size:0.85rem;
+    margin:10px 0 0;
+  }
+  main{
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 24px 18px 60px;
+  }
+  .card{
+    background: var(--navy2);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:22px 20px;
+    margin-bottom:18px;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.22), inset 0 1px 0 rgba(241,236,221,0.04);
+    animation: cardIn .35s cubic-bezier(.2,.8,.3,1) both;
+  }
+  @keyframes cardIn{
+    from{ opacity:0; transform:translateY(8px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+  .card h2{
+    margin-top:0;
+    font-family: 'Fraunces', Georgia, serif;
+    color:var(--amber);
+    font-size:1.2rem;
+    font-weight:600;
+    border-bottom:1px dashed rgba(241,236,221,0.2);
+    padding-bottom:8px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+  }
+  label{
+    display:block;
+    font-size:0.85rem;
+    color: rgba(241,236,221,0.7);
+    margin: 12px 0 5px;
+  }
+  select, input[type=number], input[type=text], input[type=password]{
+    width:100%;
+    padding:9px 11px;
+    background: var(--navy);
+    border:1px solid rgba(241,236,221,0.25);
+    color:var(--chalk);
+    border-radius:8px;
+    font-size:1rem;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  select:focus, input[type=number]:focus, input[type=text]:focus, input[type=password]:focus{
+    outline:none;
+    border-color: var(--amber);
+    box-shadow: 0 0 0 3px rgba(227,169,59,0.18);
+  }
+  .row{ display:flex; gap:12px; flex-wrap:wrap; }
+  .row > div{ flex:1; min-width:130px; }
+  .btn{
+    display:inline-block;
+    background: linear-gradient(180deg, var(--amber), color-mix(in srgb, var(--amber) 82%, black));
+    color: var(--navy);
+    border:none;
+    padding:11px 22px;
+    border-radius:9px;
+    font-weight:700;
+    font-size:1rem;
+    cursor:pointer;
+    margin-top:16px;
+    box-shadow: 0 3px 10px rgba(227,169,59,0.28);
+    transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
+  }
+  .btn:hover{ transform:translateY(-1px); box-shadow:0 6px 16px rgba(227,169,59,0.36); filter:brightness(1.04); }
+  .btn:active{ transform:translateY(0); box-shadow:0 2px 6px rgba(227,169,59,0.3); }
+  .btn.secondary{
+    background:transparent;
+    color: var(--amber);
+    border:1px solid var(--amber);
+    box-shadow:none;
+  }
+  .btn.secondary:hover{ background:rgba(227,169,59,0.08); }
+  .btn.teal{ background: linear-gradient(180deg, var(--teal), color-mix(in srgb, var(--teal) 82%, black)); color:var(--chalk); box-shadow:0 3px 10px rgba(55,145,140,0.3); }
+  .btn:disabled{ opacity:0.4; cursor:not-allowed; transform:none; filter:none; box-shadow:none; }
+
+  /* Practice screen */
+  .practice-box{ text-align:center; }
+  .qtext{
+    font-size:2.6rem;
+    margin: 18px 0;
+    letter-spacing:1px;
+  }
+  .practice-box input[type=text]{
+    text-align:center;
+    font-size:1.6rem;
+    max-width:220px;
+    margin:0 auto;
+    display:block;
+    transition: border-color .1s ease, color .1s ease;
+  }
+  .practice-box input[type=text].wrong{
+    border-color: var(--red);
+    color: var(--red);
+    background: rgba(217,86,76,0.12);
+  }
+  .answer-display{
+    text-align:center;
+    font-size:1.6rem;
+    min-width:140px;
+    max-width:220px;
+    min-height:1.3em;
+    margin:0 auto;
+    padding:8px 16px;
+    border-radius:10px;
+    border:1px solid rgba(241,236,221,0.28);
+    background:rgba(241,236,221,0.04);
+    color:var(--chalk);
+    transition: border-color .1s ease, color .1s ease, background .1s ease;
+  }
+  .answer-display.placeholder{ color: rgba(241,236,221,0.4); font-size:1rem; }
+  .answer-display.wrong{
+    border-color: var(--red);
+    color: var(--red);
+    background: rgba(217,86,76,0.12);
+  }
+  .answer-cursor{
+    display:inline-block;
+    margin-left:2px;
+    animation: cursorBlink 1s step-end infinite;
+  }
+  @keyframes cursorBlink{ 0%,50%{opacity:1;} 50.01%,100%{opacity:0;} }
+  .keypad{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:8px;
+    max-width:340px;
+    margin:14px auto 0;
+  }
+  .keypad-btn{
+    padding:14px 0;
+    font-size:1.3rem;
+    font-family:'Consolas','Courier New',monospace;
+    border:none;
+    border-radius:14px;
+    background:var(--navy2);
+    color:var(--chalk);
+    cursor:pointer;
+    -webkit-tap-highlight-color: transparent;
+    user-select:none;
+    transition: transform .08s ease, filter .08s ease;
+  }
+  .keypad-btn:active{ transform:scale(0.94); filter:brightness(1.15); }
+  .keypad-btn.special{
+    background: color-mix(in srgb, var(--teal) 35%, var(--navy2));
+    display:flex; align-items:center; justify-content:center;
+  }
+  .keypad-btn.enter{ background: var(--teal); color:var(--navy); }
+  .keypad-enter{ max-width:340px; margin:10px auto 0 !important; }
+  .progress{
+    font-size:0.85rem;
+    color: rgba(241,236,221,0.6);
+    margin-bottom:6px;
+  }
+  .timer{
+    font-size:1.1rem;
+    color: var(--teal);
+    margin-top:10px;
+  }
+  .stopwatch{
+    font-size:2rem;
+    color:var(--teal);
+    font-weight:700;
+    margin-top:12px;
+    letter-spacing:0.5px;
+  }
+  .stopwatch.slow{ color:var(--red); }
+  .countdown-num{
+    font-size:5rem;
+    font-weight:700;
+    color:var(--amber);
+    margin:26px 0;
+    animation: countdownPulse .7s ease both;
+  }
+  .countdown-num.countdown-word{
+    font-size:2.6rem;
+    font-family: Georgia, 'Noto Sans Devanagari', 'Segoe UI', sans-serif;
+    letter-spacing:1px;
+  }
+  @keyframes countdownPulse{
+    from{ opacity:0; transform:scale(0.6); }
+    to{ opacity:1; transform:scale(1); }
+  }
+  .blink-progress{
+    font-size:0.85rem;
+    color: rgba(241,236,221,0.55);
+    margin-top:8px;
+    letter-spacing:0.5px;
+  }
+  .blink-num{
+    font-size:4.4rem;
+    font-weight:700;
+    color:var(--amber);
+    min-height:1.6em;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin:10px 0 6px;
+  }
+  .blink-num.show{ animation: blinkFlash .12s ease both; }
+  @keyframes blinkFlash{
+    from{ opacity:0; transform:scale(0.85); }
+    to{ opacity:1; transform:scale(1); }
+  }
+  .split-row{ display:flex; justify-content:center; gap:16px; margin-top:6px; font-size:0.78rem; color:rgba(241,236,221,0.55); }
+  .split-row span b{ color:rgba(241,236,221,0.85); font-family:'Consolas',monospace; }
+  .feedback{
+    min-height:26px;
+    font-weight:700;
+    margin-top:10px;
+  }
+  .feedback.ok{ color:var(--green); }
+  .feedback.no{ color:var(--red); }
+
+  /* Results - speed ladder */
+  .ladder-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:8px;
+    font-size:0.9rem;
+  }
+  .ladder-q{ width:150px; flex-shrink:0; }
+  .ladder-bar-wrap{ flex:1; background:var(--navy); border-radius:6px; overflow:hidden; height:22px; }
+  .ladder-bar{ height:100%; border-radius:6px; display:flex; align-items:center; padding-left:6px; font-size:0.78rem; color:var(--navy); font-weight:700; white-space:nowrap; }
+  .ladder-time{ width:56px; text-align:right; flex-shrink:0; }
+  .stats-grid{ display:flex; gap:14px; flex-wrap:wrap; margin-bottom:18px; }
+  .stat{ flex:1; min-width:120px; background:var(--navy); border-radius:10px; padding:12px; text-align:center; }
+  .stat .stat-num{ font-size:1.4rem; color:var(--amber); font-weight:700; }
+  .stat .stat-label{ font-size:0.75rem; color:rgba(241,236,221,0.6); }
+
+  /* Tips */
+  .tip-group h3{ color:var(--teal); margin-bottom:6px; font-size:1rem; }
+  .tip-list{ list-style:none; padding:0; margin:0 0 14px; }
+  .tip-list li{
+    background:var(--navy);
+    padding:8px 10px;
+    border-radius:8px;
+    margin-bottom:6px;
+    font-size:0.92rem;
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .tip-list li button{
+    background:none; border:none; color:var(--red); cursor:pointer; font-size:0.85rem;
+  }
+  .tip-add{ display:flex; gap:8px; margin-top:8px; }
+  .tip-add select{ max-width:110px; }
+
+  /* Weak combos */
+  .combo-chip{
+    display:inline-block;
+    background:var(--red);
+    color:var(--chalk);
+    padding:6px 12px;
+    border-radius:8px;
+    margin:4px;
+    font-family:'Consolas',monospace;
+    font-size:0.95rem;
+  }
+  .chip-row{ display:flex; gap:8px; flex-wrap:wrap; margin:12px 0 18px; }
+  .chip-btn{
+    background:transparent;
+    border:1px solid rgba(241,236,221,0.25);
+    color:var(--chalk);
+    padding:6px 14px;
+    border-radius:999px;
+    cursor:pointer;
+    font-size:0.85rem;
+  }
+  .chip-btn.active{ background:var(--teal); border-color:var(--teal); color:var(--chalk); font-weight:700; }
+  .quiz-opts{ display:flex; flex-direction:column; gap:10px; margin:16px 0; }
+  .quiz-opt{
+    text-align:left;
+    background:var(--navy);
+    border:1px solid rgba(241,236,221,0.25);
+    color:var(--chalk);
+    padding:12px 14px;
+    border-radius:10px;
+    cursor:pointer;
+    font-size:0.95rem;
+    transition: all .15s ease;
+  }
+  .quiz-opt:hover:not(:disabled){ border-color:var(--amber); background:rgba(227,169,59,0.08); }
+  .quiz-opt.correct{ border-color:var(--green); background:rgba(79,168,114,0.18); font-weight:700; }
+  .quiz-opt.wrong{ border-color:var(--red); background:rgba(217,86,76,0.18); }
+  .quiz-opt:disabled{ cursor:default; opacity:0.85; }
+  .tier-sub{ margin: 6px 0 12px; }
+  .tier-sub h4{ margin:0 0 4px; font-size:0.8rem; color: rgba(241,236,221,0.55); text-transform:uppercase; letter-spacing:0.5px; }
+  .tier-sub-wrap{ margin-top:14px; padding-top:12px; border-top:1px dashed rgba(241,236,221,0.2); }
+  .tier-sub-wrap > h4{ margin:0 0 2px; font-size:0.9rem; color:var(--amber); }
+  .learn-list{
+    margin-top:10px;
+    max-height:400px;
+    overflow-y:auto;
+    border-radius:10px;
+  }
+  .learn-row{
+    display:flex;
+    justify-content:space-between;
+    padding:9px 6px;
+    font-size:1.05rem;
+    border-bottom:1px dashed var(--line);
+  }
+  .learn-row:last-child{ border-bottom:none; }
+  .learn-row.speaking-row{
+    background: rgba(227,169,59,0.16);
+    border-radius:8px;
+    color: var(--amber);
+    font-weight:700;
+  }
+  .learn-grid{
+    margin-top:10px;
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(88px,1fr));
+    gap:7px;
+    max-height:420px;
+    overflow-y:auto;
+    padding:2px;
+  }
+  .learn-cell{
+    background:var(--navy);
+    border:1px solid var(--line);
+    border-radius:9px;
+    padding:7px 5px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:2px;
+    text-align:center;
+    word-break:break-all;
+  }
+  .learn-cell-top{ color:var(--amber); font-weight:700; font-size:0.85rem; }
+  .learn-cell-bot{ font-size:0.78rem; color:rgba(241,236,221,0.8); }
+  .empty-msg{ color:rgba(241,236,221,0.5); font-style:italic; }
+  .hint{ font-size:0.82rem; color:rgba(241,236,221,0.55); margin-top:4px; }
+  .check-row{
+    display:flex; align-items:center; gap:9px;
+    background: rgba(227,169,59,0.07);
+    border:1px solid rgba(227,169,59,0.25);
+    border-radius:10px;
+    padding:10px 12px;
+    margin-top:10px;
+    font-size:0.9rem;
+    cursor:pointer;
+  }
+  .check-row input[type="checkbox"]{
+    width:18px; height:18px;
+    accent-color: var(--amber);
+    flex-shrink:0;
+    cursor:pointer;
+  }
+  .hist-row{
+    background:var(--navy);
+    border-radius:8px;
+    padding:10px 12px;
+    margin-bottom:8px;
+  }
+  .hist-main{ display:flex; justify-content:space-between; font-weight:700; margin-bottom:4px; }
+  .hist-op{ color:var(--amber); }
+  .hist-time-tag{ color:rgba(241,236,221,0.5); font-size:0.82rem; font-weight:400; }
+  .hist-stats{ display:flex; gap:14px; font-size:0.85rem; color:rgba(241,236,221,0.8); flex-wrap:wrap; }
+  .hist-toggle{ margin-top:8px; padding:5px 12px; font-size:0.78rem; }
+  .hist-detail{ margin-top:10px; padding-top:10px; border-top:1px dashed rgba(241,236,221,0.15); }
+  .prog-chart{
+    display:flex;
+    align-items:flex-end;
+    gap:5px;
+    height:80px;
+    background:var(--navy);
+    border-radius:8px;
+    padding:8px;
+  }
+  .prog-bar-wrap{ flex:1; height:100%; display:flex; align-items:flex-end; }
+  .prog-bar{ width:100%; background:var(--teal); border-radius:4px 4px 0 0; min-height:4px; }
+  .rank-op-card{ background:var(--navy); border-radius:10px; padding:12px 14px; margin-bottom:10px; }
+  .rank-op-head{ display:flex; justify-content:space-between; font-weight:700; margin-bottom:6px; }
+  .rank-op-name{ color:var(--amber); }
+  .rank-bar-wrap{ background:var(--navy); border-radius:999px; height:10px; overflow:hidden; margin:6px 0; }
+  .rank-bar{ height:100%; background: linear-gradient(90deg, var(--teal), var(--amber)); border-radius:999px; }
+  footer{ text-align:center; padding:20px; color:rgba(241,236,221,0.4); font-size:0.8rem; }
+
+  /* Splash screen with signature chalk toggle */
+  .splash{
+    position:fixed; inset:0; z-index:100;
+    display:flex; align-items:center; justify-content:center;
+    background:
+      radial-gradient(ellipse at 50% 30%, rgba(227,169,59,0.10), transparent 60%),
+      var(--navy);
+    padding:20px;
+    animation: splashFade .4s ease both;
+  }
+  .splash.closing{ animation: splashOut .45s cubic-bezier(.4,0,.6,1) forwards; }
+  @keyframes splashFade{ from{ opacity:0; } to{ opacity:1; } }
+  @keyframes splashOut{ from{ opacity:1; transform:scale(1); } to{ opacity:0; transform:scale(1.04); } }
+  .splash-card{
+    text-align:center;
+    background:var(--navy2);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:44px 34px 34px;
+    max-width:340px;
+    width:100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    animation: cardIn .5s cubic-bezier(.2,.8,.3,1) both .1s;
+  }
+  .splash-icon{ font-size:3rem; margin-bottom:6px; }
+  .splash-title{
+    font-family:'Fraunces', Georgia, serif;
+    color:var(--amber);
+    font-size:2rem;
+    font-weight:700;
+    margin:0;
+    letter-spacing:0.5px;
+  }
+  .splash-sub{
+    margin:6px 0 30px;
+    color:rgba(241,236,221,0.6);
+    font-size:0.92rem;
+  }
+  .chalk-toggle{
+    background:none; border:none; cursor:pointer; padding:0;
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+    width:100%;
+  }
+  .chalk-toggle-track{
+    position:relative;
+    width:120px; height:52px;
+    border-radius:999px;
+    border:2px dashed rgba(227,169,59,0.55);
+    background:rgba(227,169,59,0.06);
+    transition: background .3s ease, border-color .3s ease;
+    display:block;
+  }
+  .chalk-toggle-thumb{
+    position:absolute;
+    top:4px; left:4px;
+    width:40px; height:40px;
+    border-radius:50%;
+    background: linear-gradient(180deg, var(--amber), color-mix(in srgb, var(--amber) 80%, black));
+    box-shadow:0 3px 10px rgba(0,0,0,0.35);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.1rem;
+    transition: left .35s cubic-bezier(.34,1.56,.64,1), background .3s ease;
+  }
+  .chalk-toggle-thumb::after{ content:"▶"; color:var(--navy); font-size:0.85rem; }
+  .chalk-toggle.on .chalk-toggle-track{ background:rgba(79,168,114,0.15); border-color:var(--green); }
+  .chalk-toggle.on .chalk-toggle-thumb{ left:72px; background:linear-gradient(180deg, var(--green), color-mix(in srgb, var(--green) 80%, black)); }
+  .chalk-toggle.on .chalk-toggle-thumb::after{ content:"✓"; }
+  .chalk-toggle-text{
+    font-weight:700;
+    color:var(--amber);
+    letter-spacing:0.3px;
+    font-size:0.95rem;
+  }
+  .splash-credit{
+    margin:26px 0 0;
+    font-family:'Caveat', cursive;
+    font-size:1.4rem;
+    color:rgba(241,236,221,0.55);
+  }
+  .splash-credit span{ color:var(--teal); font-weight:700; }
+  @media (prefers-reduced-motion: reduce){
+    .splash, .splash-card, .card{ animation:none !important; }
+    .pw-modal.card{ transform:translate(-50%,-50%) !important; }
+    .chalk-toggle-thumb{ transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div id="splashScreen" class="splash">
+  <div class="splash-card">
+    <div class="splash-icon">🧮</div>
+    <h1 class="splash-title">Ganit Abhyaas</h1>
+    <p class="splash-sub">Speed Math Trainer</p>
+    <button id="splashToggle" class="chalk-toggle" role="switch" aria-checked="false">
+      <span class="chalk-toggle-track"><span class="chalk-toggle-thumb"></span></span>
+      <span class="chalk-toggle-text">Shuru Karein</span>
+    </button>
+    <p class="splash-credit">Made by <span>Keshav Meena</span></p>
+  </div>
+</div>
+
+<header>
+  <h1>🧮 Ganit Abhyaas</h1>
+  <p>Apna calculation setup banayein, practice karein, aur apni speed track karein</p>
+  <div class="theme-row" id="themeRow">
+    <button class="theme-dot" data-theme="navy" title="Navy Chalk" style="background:#101B2E;"></button>
+    <button class="theme-dot" data-theme="paper" title="Paper Notebook" style="background:#EFE9D8;"></button>
+    <button class="theme-dot" data-theme="forest" title="Forest" style="background:#10241C;"></button>
+    <button class="theme-dot" data-theme="sunset" title="Sunset" style="background:#221A2E;"></button>
+  </div>
+</header>
+
+<nav id="tabbar"></nav>
+
+<main id="main"></main>
+
+<div id="pwModalRoot"></div>
+
+<footer>Aapki practice history, records aur progress ab is device par save rehte hain — page reload karne par bhi nahi mitte.</footer>
+
+<script>
+/* ================= STATE ================= */
+const DEFAULT_TIPS = {
+  add: [
+    "10 tak pahunchne ke liye number tod do: 8+7 = 8+2+5 = 10+5 = 15",
+    "Doubles yaad rakho: 6+6=12, 7+7=14 — inse pass ke sawaal tez hote hain (6+7 = 12+1)",
+    "Order badalne se jawaab nahi badalta — bade number ko pehle jodo (commutative law)",
+    "Round number banao: 38+45 = 40+45−2 = 85−2 = 83",
+    "Break Method: dusre number ko parts me tod do — 67+28 = 67+20+8 = 87+8 = 95",
+    "Round-Off Method: number ko easy banao phir adjust karo — 48+29 = 48+30−1 = 78−1 = 77",
+    "Left-to-Right Method: bade se chhote place value tak jodo — 123+456 = (100+400)+(20+50)+(3+6) = 500+70+9 = 579",
+    "Daily 10-min practice: 3 min accuracy (dheere) + 4 min timer ke saath + 3 min bina paper ke — speed apne aap badhegi",
+  ],
+  sub: [
+    "Bada number 10/100 ke paas le jao: 52−9 = 52−10+1 = 43",
+    "Add karke check karo: 15−7 me socho 7+? = 15",
+    "Round karke wapas jodo: 83−38 = 83−40+2 = 43+2 = 45",
+    "Same number ghatana turant 0 hota hai — dhyan do jab dono barabar ho",
+    "Break Method: jo ghatana hai use tod do — 92−47 = 92−40−7 = 52−7 = 45",
+    "Round-Off Method: number ko round karo phir adjust karo — 100−38 = 100−40+2 = 60+2 = 62",
+    "Count-Up Method: chhote se bade tak gin ke farak nikaalo — 52−39 = (39→40)+(40→52) = 1+12 = 13",
+    "Daily 10-min practice: 3 min accuracy (dheere) + 4 min timer ke saath + 3 min bina paper ke — speed apne aap badhegi",
+  ],
+  mul: [
+    "×9 trick: number ko ×10 karo, phir usme se number ghata do (7×9 = 70−7 = 63)",
+    "×5 trick: number ko ÷2 karo phir ×10 (8×5 = 4×10 = 40)",
+    "×11 trick: digits ke beech me jod likh do (23×11 = 2_(2+3)_3 = 253)",
+    "×4 trick: number ko do baar double karo (17×4 = 17×2×2 = 34×2 = 68)",
+    "a×b = b×a — jo number chhota hai use dusri baar guna karna asaan hota hai",
+  ],
+  div: [
+    "Division ko ulta multiplication table jaisa socho: 42÷6 = kaunsa number ×6 se 42 banata hai",
+    "÷5 trick: number ko ×2 karke ÷10 karo (85÷5 = 170÷10 = 17)",
+    "Estimate range se karo: 47÷6 me socho 6×7=42 aur 6×8=48, jawaab 7 ke aas paas hoga",
+  ],
+  lcm: [
+    "Bade number ke multiples pehle check karo — chhote se LCM milne ka chance kam hota hai",
+    "Agar ek number dusre ka multiple hai to LCM wahi bada number hoga (jaise LCM(4,8)=8)",
+    "Dono number ke common factors nikal ke unhe ek baar hi lo (LCM = product ÷ GCD)",
+  ],
+  square: [
+    "(a+b)² = a² + 2ab + b² — 23² = (20+3)² = 400+120+9 = 529",
+    "5 pe khatam hone wale number: n5² = n×(n+1) ke baad 25 (35² = 3×4=12 → 1225)",
+    "50 ke paas wale number: (50±k)² = 2500 ± 100k + k² (48² = 2500−400+4 = 2304)",
+  ],
+  percent: [
+    "% ko fraction me socho: 50%=½, 25%=¼, 10%=1/10 — jaldi divide karo",
+    "10% nikaal ke scale karo: 20% = 10% ka double, 5% = 10% ka half",
+    "a% of b = b% of a — order badal sakte ho (8% of 50 = 50% of 8 = 4)",
+  ],
+};
+
+let practiceTickHandle = null; // live extreme-precision stopwatch interval
+let countdownTickHandle = null; // 3-2-1 get-ready countdown interval, runs before each session's timer starts
+let blinkTickHandle = null; // flash-card "blinking mode" show/hide timer, torn down between renders
+let practiceKeydownHandler = null; // physical-keyboard listener used when the on-screen keypad input mode is active
+
+let state = {
+  tab: 'setup',
+  settings: { op:'add', rowCount:2, digitA:1, digitB:1, qCount:10, blinkMode:false },
+  session: null,
+  lastResults: null,
+  combos: { add:{}, sub:{}, mul:{}, div:{} },
+  records: { add:{}, sub:{}, mul:{}, div:{} }, // leaderboard: best time ever per exact calculation, tagged by digit tier
+  leaderTierFilter: 'all', // '1','2','3' or 'all' — which digit-tier the leaderboard shows
+  leaderOpFilter: 'add',
+  tips: JSON.parse(JSON.stringify(DEFAULT_TIPS)),
+  masterMode: false,
+  history: [],
+  bestRank: {},          // per-op best score/tier ever achieved
+  weakFilter: 'all',     // which op to show in Kamzor Combos tab
+  expandedHistory: null, // id of expanded history row
+  theme: 'navy',
+  course: { unlocked: 1, completed: {} }, // step-by-step speed program
+  courseLevel: null,      // level id if current session is part of the course
+  lastCourseResult: null, // {levelId, pass, avgTime, accuracy} shown on results screen
+  levelsOp: 'add',        // which operation sub-section is active in Beginner→Advanced
+  levelProgress: {        // per-operation Beginner/Intermediate/Advanced progress
+    add: { unlocked:1, completed:{} },
+    sub: { unlocked:1, completed:{} },
+    mul: { unlocked:1, completed:{} },
+    div: { unlocked:1, completed:{} },
+  },
+  activeLevelRun: null,    // {op, id} if current session belongs to a Beginner→Advanced level
+  lastLevelResult: null,   // result shown after a Beginner→Advanced session ends
+  tablesSettings: { tableNum: 11, mode: 'normal', cubeMode: 'normal', cubeRange: 12, squareMode: 'normal', squareRange: 12 }, // Learn Tables + Cube Roots + Squares section
+  learnSettings: { tableNum: 1, powerExp: 4, powerRange: 20 }, // full reference "Learn" tab — read-only pahada/square/cube/power lists
+  gkSettings: { subject: 'history', mode: 'read' }, // Static GK (CGL) tab — which subject is open + read/quiz mode
+  gkQuiz: null, // active GK quiz-session: {subject, topicIdx, questions, index, correctCt, answered}
+  progressDigitFilter: 'all', // Progress tab: 'all' | 1 | 2 | 3 | 4 | 'row' — apne hisab se digit/row check
+  navMenuOpen: false, // whether the 3-dot (⋮) nav dropdown is currently open
+  security: { password: null }, // password gate for Data Reset (set on first use)
+  passwordModal: null, // active password prompt: {mode:'create'|'verify'|'change-verify', purpose:'reset'|'change', pass1, pass2, old, error}
+  practiceCustomize: { inputMode:'native', showCountdown:true, countdownStyle:'numeric', showProgress:true, showStopwatch:true, showLiveAccuracy:true, showStreak:true }, // fully customizable practice screen
+  speakSettings: { medium:'hi', voiceURI:'', rate:0.9, pitch:1 }, // 🔊 Speak Tables — medium (Hindi/English) + chosen voice, set from top-corner toggle or Customize
+  speakingActive: false, // true while a table is currently being read aloud (not persisted)
+  speakingRow: null,     // which multiplier (1-12) is currently being spoken, for highlighting (not persisted)
+};
+
+/* ================= PERSISTENCE — survive page reloads ================= */
+const STORAGE_KEY = 'ganit-abhyaas-progress';
+const PERSIST_KEYS = ['combos','records','tips','history','bestRank','weakFilter','theme','course','levelProgress','tablesSettings','learnSettings','gkSettings','progressDigitFilter','security','practiceCustomize','speakSettings'];
+let saveInFlight = false, savePending = false;
+
+function getPersistedSlice(){
+  const slice = {};
+  PERSIST_KEYS.forEach(k => { slice[k] = state[k]; });
+  return slice;
+}
+
+async function saveState(){
+  const payload = JSON.stringify(getPersistedSlice());
+
+  // localStorage is what keeps progress once this app is packaged into a standalone APK/WebView —
+  // window.storage only exists inside the Claude artifact preview, so this is the path that matters on-device.
+  try{
+    if(typeof localStorage !== 'undefined') localStorage.setItem(STORAGE_KEY, payload);
+  }catch(e){
+    console.error('Ganit Abhyaas: localStorage save failed', e);
+  }
+
+  // Mirror to window.storage too when available (Claude artifact preview) — best-effort, never blocks the localStorage save above.
+  if(typeof window !== 'undefined' && window.storage){
+    if(saveInFlight){ savePending = true; return; }
+    saveInFlight = true;
+    try{
+      await window.storage.set(STORAGE_KEY, payload, false);
+    }catch(e){
+      console.error('Ganit Abhyaas: window.storage save failed', e);
+    }finally{
+      saveInFlight = false;
+      if(savePending){ savePending = false; saveState(); }
+    }
+  }
+}
+
+async function loadState(){
+  let saved = null;
+
+  // Prefer window.storage when running inside Claude's artifact preview.
+  if(typeof window !== 'undefined' && window.storage){
+    try{
+      const result = await window.storage.get(STORAGE_KEY, false);
+      if(result && result.value) saved = JSON.parse(result.value);
+    }catch(e){ /* nothing saved there yet */ }
+  }
+
+  // Fall back to localStorage — this is the path used once packaged as a standalone APK.
+  if(!saved && typeof localStorage !== 'undefined'){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(raw) saved = JSON.parse(raw);
+    }catch(e){ /* nothing saved there yet either — first ever visit, keep defaults */ }
+  }
+
+  if(saved){
+    PERSIST_KEYS.forEach(k => { if(saved[k]!==undefined) state[k] = saved[k]; });
+  }
+  // backfill any new tablesSettings fields (older saved data may pre-date them) without touching existing saved values
+  state.tablesSettings = Object.assign(
+    { tableNum:11, mode:'normal', cubeMode:'normal', cubeRange:12, squareMode:'normal', squareRange:12 },
+    state.tablesSettings
+  );
+  state.learnSettings = Object.assign(
+    { tableNum:1, powerExp:4, powerRange:20 },
+    state.learnSettings
+  );
+  state.security = Object.assign({ password: null }, state.security);
+  state.practiceCustomize = Object.assign(
+    { inputMode:'native', showCountdown:true, countdownStyle:'numeric', showProgress:true, showStopwatch:true, showLiveAccuracy:true, showStreak:true },
+    state.practiceCustomize
+  );
+  state.speakSettings = Object.assign(
+    { medium:'hi', voiceURI:'', rate:0.9, pitch:1 },
+    state.speakSettings
+  );
+  // recompute accuracy on older saved history — previously every session showed 100% accuracy
+  // because a question only got recorded once it was answered correctly; now wrong attempts
+  // (already tracked per-question as `mistakes`) count against accuracy too.
+  if(Array.isArray(state.history)){
+    state.history.forEach(h=>{
+      if(h.details && h.details.length){
+        const trueCorrect = h.details.filter(d=>(d.mistakes||0)===0).length;
+        h.correctCt = trueCorrect;
+        h.accuracy = (trueCorrect/h.total)*100;
+        h.rank = computeRank(h.op, h.avgTime, h.accuracy, h.digitTier||1);
+      }
+    });
+    const recomputedBest = {};
+    state.history.forEach(h=>{
+      if(!h.rank) return;
+      if(!recomputedBest[h.op] || h.rank.score > recomputedBest[h.op].score){
+        recomputedBest[h.op] = { tier:h.rank.tier, emoji:h.rank.emoji, score:h.rank.score, sub:h.rank.sub };
+      }
+    });
+    state.bestRank = recomputedBest;
+  }
+  state.gkSettings = Object.assign(
+    { subject:'history', mode:'read' },
+    state.gkSettings
+  );
+  if(state.progressDigitFilter==null) state.progressDigitFilter = 'all';
+}
+
+/* ================= COURSE (step-by-step speed program) ================= */
+const COURSE_LEVELS = [
+  { id:1,  title:'Jod — Ek Ank',        op:'add', rowCount:2, digitA:1, digitB:1, qCount:12, maxAvgTime:3.0, minAccuracy:80, note:'Single-digit jod se shuruaat — anguliyon ke bina.' },
+  { id:2,  title:'Ghata — Ek Ank',      op:'sub', digitA:1, digitB:1, qCount:12, maxAvgTime:3.5, minAccuracy:80, note:'Single-digit ghatana, turant jawaab dena hai.' },
+  { id:3,  title:'Guna — Table Tak',    op:'mul', digitA:1, digitB:1, qCount:12, maxAvgTime:4.0, minAccuracy:80, note:'1×1 tak ke tables yaad se bolo.' },
+  { id:4,  title:'Jod — Do Ank + Ek',   op:'add', digitA:2, digitB:1, qCount:12, maxAvgTime:4.0, minAccuracy:80, note:'2-digit + 1-digit — carry tez karo.' },
+  { id:5,  title:'Ghata — Do Ank',      op:'sub', digitA:2, digitB:1, qCount:12, maxAvgTime:4.5, minAccuracy:75, note:'2-digit me se 1-digit ghatana, borrow ki practice.' },
+  { id:6,  title:'Guna — Do Ank × Ek',  op:'mul', digitA:2, digitB:1, qCount:12, maxAvgTime:5.0, minAccuracy:75, note:'2-digit ko 1-digit se guna karo.' },
+  { id:7,  title:'Bhaag — Bunyaadi',    op:'div', digitA:1, digitB:1, qCount:10, maxAvgTime:5.0, minAccuracy:75, note:'Chhote division — table ulta socho.' },
+  { id:8,  title:'Jod — Do Ank + Do',   op:'add', digitA:2, digitB:2, qCount:10, maxAvgTime:5.0, minAccuracy:75, note:'Dono number 2-digit — double carry ho sakta hai.' },
+  { id:9,  title:'Guna — Do Ank × Do',  op:'mul', digitA:2, digitB:2, qCount:10, maxAvgTime:7.0, minAccuracy:70, note:'2-digit × 2-digit — sabse challenging step.' },
+  { id:10, title:'Squares — 2-Ank',     op:'square', digitA:2, digitB:1, qCount:10, maxAvgTime:6.0, minAccuracy:75, note:'11 se 99 tak ke squares — (a+b)² formula use karo.' },
+  { id:11, title:'Percentage — Bunyaadi', op:'percent', digitA:1, digitB:2, qCount:10, maxAvgTime:6.0, minAccuracy:75, note:'Aasan percentages ka fraction trick lagao.' },
+  { id:12, title:'Mix Master',         op:'add', digitA:1, digitB:1, qCount:10, maxAvgTime:3.5, minAccuracy:85, note:'Ab apni kamzor combinations par wapas jao — Master Practice try karo.', master:true },
+];
+
+function levelById(id){ return COURSE_LEVELS.find(l=>l.id===id); }
+
+function startCourseLevel(id){
+  const lvl = levelById(id);
+  if(!lvl) return;
+  state.courseLevel = id;
+  if(lvl.master){
+    startPractice(true);
+    return;
+  }
+  state.settings = {
+    op: lvl.op,
+    rowCount: lvl.rowCount || 2,
+    digitA: lvl.digitA,
+    digitB: lvl.digitB,
+    qCount: lvl.qCount,
+  };
+  startPractice(false);
+}
+
+const THRESH = { add:3, sub:3, mul:4, div:4, mix:4, lcm:5, square:4, percent:6, table:2.5, cbrt:4, sqdrill:3 }; // seconds considered "slow"
+
+/* ================= BEGINNER → ADVANCED TRACKS (per operation) ================= */
+const LEVEL_TRACKS = {
+  add: [
+    { id:1, stage:'Beginner',     title:'1 se 10 Tak Jod', qCount:15, maxAvgTime:3.0, minAccuracy:85, range:[1,10], note:'Dono number 1-10 ke beech se — jaise 8+7, 5+6, 4+8. Pura range cover hota hai, sirf doubles nahi.' },
+    { id:2, stage:'Intermediate', title:'Do-Ank + Ek-Ank',  qCount:12, maxAvgTime:4.5, minAccuracy:80, digitA:2, digitB:1, note:'Carry ke saath practice — 47+8 jaisa.' },
+    { id:3, stage:'Advanced',     title:'Do-Ank + Do-Ank',  qCount:10, maxAvgTime:6.0, minAccuracy:75, digitA:2, digitB:2, note:'Double carry sambhalo — 68+57 jaisa.' },
+  ],
+  sub: [
+    { id:1, stage:'Beginner',     title:'1 se 10 Tak Ghata', qCount:15, maxAvgTime:3.5, minAccuracy:85, digitA:1, digitB:1, note:'Chhote number, turant jawaab do.' },
+    { id:2, stage:'Intermediate', title:'Do-Ank − Ek-Ank',   qCount:12, maxAvgTime:4.5, minAccuracy:80, digitA:2, digitB:1, note:'Borrow ki practice — 52−9 jaisa.' },
+    { id:3, stage:'Advanced',     title:'Do-Ank − Do-Ank',   qCount:10, maxAvgTime:6.0, minAccuracy:75, digitA:2, digitB:2, note:'Double borrow sambhalo — 83−38 jaisa.' },
+  ],
+  mul: [
+    { id:1, stage:'Beginner',     title:'Tables Tak Guna',   qCount:15, maxAvgTime:4.0, minAccuracy:85, digitA:1, digitB:1, note:'1×1 se 9×9 tak yaad se bolo.' },
+    { id:2, stage:'Intermediate', title:'Do-Ank × Ek-Ank',   qCount:12, maxAvgTime:5.5, minAccuracy:80, digitA:2, digitB:1, note:'×9, ×5, ×11 tricks use karo.' },
+    { id:3, stage:'Advanced',     title:'Do-Ank × Do-Ank',   qCount:10, maxAvgTime:8.0, minAccuracy:70, digitA:2, digitB:2, note:'Sabse challenging step — 23×47 jaisa.' },
+  ],
+  div: [
+    { id:1, stage:'Beginner',     title:'Bunyaadi Bhaag',     qCount:12, maxAvgTime:5.0, minAccuracy:80, digitA:1, digitB:1, note:'Table ulta socho — 42÷6 jaisa.' },
+    { id:2, stage:'Intermediate', title:'Do-Ank Jawaab ÷ Ek-Ank', qCount:10, maxAvgTime:6.0, minAccuracy:75, digitA:2, digitB:1, note:'Estimate range se karo.' },
+    { id:3, stage:'Advanced',     title:'Do-Ank ÷ Do-Ank',    qCount:10, maxAvgTime:8.0, minAccuracy:70, digitA:2, digitB:2, note:'Bade divisor ke saath practice.' },
+  ],
+};
+const STAGE_EMOJI = { Beginner:'🌱', Intermediate:'⚡', Advanced:'🔥' };
+
+/* ================= STATIC GK (SSC CGL) — subject > topic > facts ================= */
+const GK_DATA = {
+  history: { label:'📜 History', topics: [
+    { title:'भारत का इतिहास', facts:[
+      'Based on available sources, Indian history is divided into Pre-history (20 lakh–3000 BCE, no written evidence), Proto-history (3000–600 BCE, written evidence exists but undeciphered — e.g. Indus Valley), and the Historic period (after 600 BCE, written accounts available and deciphered).',
+      'Palaeolithic Age evidence comes chiefly from the Sohan Valley region; the Chautra site yielded hand-axes and flakes. Other sites: Narsinghpur (Narmada valley), Nevasa (Maharashtra), Giddalur/Kurnool (AP), Vadamadurai/Attirampakkam (Tamil Nadu).',
+      'Mesolithic Age tools were made of quartzite; key sites: Birbhanpur (West Bengal), Langhnaj (Gujarat), Adamgarh (MP) and Bagor (Rajasthan) — the last two also give the earliest evidence of animal husbandry.',
+      'Neolithic Age key sites: Mehrgarh (Balochistan), Koldihwa (UP), Chirand (Bihar), Burzahom & Gufkral (Kashmir), Daojali Hading (Assam). Mehrgarh gives the earliest evidence of agriculture.',
+      'Fire was first used in the Middle Palaeolithic; the wheel was invented in the Neolithic; the dog was the first animal domesticated; the axe (kulhadi) was the first tool made by humans.',
+      'The Indus Valley Civilization (2350–1750 BCE), also called the Harappan Civilization, was discovered in 1921 by Dayaram Sahni under Sir John Marshall\'s leadership — a Proto-historic, Bronze Age civilization.',
+      'IVC extent: Manda, Kashmir (north); Sutkagendor, Balochistan (west); Alamgirpur, Meerut UP (east); Daimabad, Maharashtra (south). Its script was pictographic, written right to left.',
+      'Town planning and a drainage system were the chief features of Harappan cities — the raised upper part was the "citadel" and the lower part the "lower town". Kalibangan was the only site where even the lower town had a fortification wall.',
+      'The Great Bath at Mohenjodaro (11.88 m long, 7.01 m wide, 2.43 m deep) was a public tank used for ritual bathing.',
+      'Harappan society had four classes — scholars, warriors, traders and artisans; people were both vegetarian and non-vegetarian; entertainment included gambling, hunting and dance-music; both cremation and burial were practised.',
+      'The Harappans worshipped a Mother Goddess, and also practised tree and snake worship; the humped bull was especially venerated; no temple has been found at any Harappan site.',
+      'A Mohenjodaro seal depicts a three-faced "Pashupati" deity flanked by an elephant, tiger, rhino and buffalo.',
+      'Agriculture, animal husbandry, craft and trade were the economic base; nine crops are known (wheat, barley, cotton, dates, watermelon, peas, mustard, sesame); the world\'s first cotton cultivation began here, so Greeks called it "Sindon".',
+      'Mesopotamian (Sargon-era) inscriptions mention Meluhha (Indus Valley), Dilmun (Bahrain) and Magan (Makan) as trade partners; trade was by barter, since no coins have been found at Harappan sites; silver appeared in India for the first time at Harappan sites.',
+      'Imported goods: tin & silver (Afghanistan/Persia), copper (Khetri Rajasthan, Balochistan), gold (Afghanistan/Persia/Karnataka), lapis lazuli (Badakhshan, Afghanistan), gomed (Saurashtra).',
+      'Harappa (Ravi river; Dayaram Sahni, 1921) yielded a unicorn-seal & copper cart; Mohenjodaro ("Mound of the Dead"; R.D. Banerjee, 1922) yielded the Pashupati seal, Bronze Dancing Girl, Great Granary & Great Bath.',
+      'Lothal (Gujarat; S.R. Rao, 1954) is famous for its dockyard; Kalibangan (Rajasthan) for ploughed fields; Dholavira (Gujarat) for water-management structures & a large signboard; Rakhigarhi (Haryana) is the largest known Harappan site in India; Ropar shows a human buried alongside a dog.',
+    ]},
+  ]},
+  geography: { label:'🗺️ Geography', topics: [
+    { title:'Physical Features', facts:[
+      'India\'s major physical divisions: the Himalayas, Northern Plains (Indo-Gangetic), Peninsular Plateau, Coastal Plains, and Islands.',
+      'Kangchenjunga (Sikkim) is the highest peak in India and the third-highest in the world.',
+      'The Himalayas are divided into Greater Himalayas (Himadri), Lesser Himalayas (Himachal) and the Shivalik range.',
+    ]},
+    { title:'Rivers', facts:[
+      'The Ganga, originating from the Gangotri glacier, is the longest river flowing within India.',
+      'The Godavari is the largest river of Peninsular India, often called "Dakshin Ganga".',
+      'Narmada and Tapi are unusual among peninsular rivers as they flow west into the Arabian Sea.',
+      'The Brahmaputra originates in Tibet and enters India through Arunachal Pradesh.',
+    ]},
+    { title:'States, Climate & Wildlife', facts:[
+      'Rajasthan is the largest Indian state by area; Goa is the smallest.',
+      'Uttar Pradesh is the most populous Indian state.',
+      'India has a monsoon-type climate — the Southwest Monsoon (June–Sept) brings most of the annual rainfall.',
+      'Jim Corbett National Park (Uttarakhand), established in 1936, is India\'s oldest national park.',
+      'Kaziranga National Park (Assam) is famous for the one-horned rhinoceros.',
+      'Gir National Park (Gujarat) is the only wild home of the Asiatic lion.',
+      'The Sundarbans (West Bengal) is the world\'s largest mangrove forest and home to the Royal Bengal Tiger.',
+    ]},
+  ]},
+  polity: { label:'⚖️ Polity & Constitution', topics: [
+    { title:'The Constitution', facts:[
+      'The Constitution of India was adopted on 26 November 1949 and came into force on 26 January 1950.',
+      'Dr. B.R. Ambedkar was the Chairman of the Drafting Committee; Dr. Rajendra Prasad was President of the Constituent Assembly.',
+      'The Indian Constitution is the longest written constitution of any sovereign country in the world.',
+      'It borrows features from various countries — Parliamentary system (UK), Fundamental Rights (USA), Directive Principles (Ireland).',
+    ]},
+    { title:'Rights & Duties', facts:[
+      'The Preamble describes India as a Sovereign, Socialist, Secular, Democratic Republic — "Socialist" and "Secular" were added by the 42nd Amendment (1976).',
+      'There are 6 Fundamental Rights (Articles 12–35): Equality, Freedom, Against Exploitation, Freedom of Religion, Cultural & Educational Rights, and Constitutional Remedies.',
+      'The Right to Property was removed from Fundamental Rights by the 44th Amendment (1978) and made a legal right under Article 300A.',
+      'Fundamental Duties (Article 51A) were added by the 42nd Amendment; a duty on education for children (6–14 years) was added later by the 86th Amendment.',
+      'Directive Principles of State Policy are contained in Part IV, Articles 36–51.',
+    ]},
+    { title:'Government Structure', facts:[
+      'Parliament of India is bicameral — Lok Sabha (House of the People) and Rajya Sabha (Council of States).',
+      'Article 356 deals with President\'s Rule in a state; Article 324 establishes the Election Commission.',
+      'Harilal J. Kania was the first Chief Justice of India.',
+      'The 73rd and 74th Amendments (1992) gave constitutional status to Panchayati Raj institutions and Urban Local Bodies respectively.',
+      'The 101st Amendment (2017) introduced the Goods and Services Tax (GST).',
+    ]},
+  ]},
+  economy: { label:'💰 Economy', topics: [
+    { title:'Planning & Institutions', facts:[
+      'India\'s First Five Year Plan ran from 1951–56, based on the Harrod-Domar model.',
+      'NITI Aayog replaced the Planning Commission on 1 January 2015.',
+      'The Reserve Bank of India (RBI) was established on 1 April 1935 under the RBI Act, 1934, and was nationalized in 1949; its headquarters is in Mumbai.',
+    ]},
+    { title:'Revolutions & Reforms', facts:[
+      'The Green Revolution (1960s), associated with M.S. Swaminathan in India, transformed food-grain production, led first by Punjab.',
+      'The White Revolution / Operation Flood was led by Verghese Kurien, known as the "Father of the White Revolution" / "Milkman of India".',
+      'The 1991 economic reforms (LPG — Liberalization, Privatization, Globalization) were introduced by FM Manmohan Singh under PM P.V. Narasimha Rao.',
+      'GST (Goods and Services Tax) was implemented from 1 July 2017 under the theme "One Nation, One Tax".',
+      'The ₹ symbol for the Indian Rupee was designed by D. Udaya Kumar and officially adopted in 2010.',
+    ]},
+  ]},
+  science: { label:'🔬 General Science', topics: [
+    { title:'Physics Basics', facts:[
+      'SI unit of Force is the Newton; of Power is the Watt; of Energy/Work is the Joule; of Pressure is the Pascal.',
+      'Speed of light in vacuum is approximately 3 × 10⁸ m/s.',
+    ]},
+    { title:'Chemistry Basics', facts:[
+      'An atom consists of protons and neutrons in the nucleus, with electrons orbiting around it.',
+      'The electron was discovered by J.J. Thomson (1897); the neutron was discovered by James Chadwick (1932).',
+      'The pH scale ranges from 0–14: below 7 is acidic, above 7 is basic, and 7 is neutral.',
+    ]},
+    { title:'Biology Basics', facts:[
+      'The cell is the basic structural and functional unit of life; the term "cell" was coined by Robert Hooke (1665).',
+      'The ABO blood group system was discovered by Karl Landsteiner.',
+      'Vitamin deficiency diseases: Vitamin A → night blindness; Vitamin B1 → beriberi; Vitamin C → scurvy; Vitamin D → rickets (in children).',
+    ]},
+  ]},
+  awareness: { label:'🏅 Static Awareness', topics: [
+    { title:'National Symbols', facts:[
+      'National Anthem "Jana Gana Mana" was written by Rabindranath Tagore and adopted on 24 January 1950.',
+      'National Song "Vande Mataram" was written by Bankim Chandra Chattopadhyay, taken from his novel Anandmath.',
+      'National Animal: Tiger. National Bird: Peacock. National Flower: Lotus. National Fruit: Mango.',
+      'The National Emblem is adapted from the Lion Capital of Ashoka at Sarnath, with the motto "Satyameva Jayate" (Truth alone triumphs), taken from the Mundaka Upanishad.',
+    ]},
+    { title:'Awards & Days', facts:[
+      'Bharat Ratna is India\'s highest civilian award, instituted in 1954.',
+      'Major Dhyan Chand Khel Ratna Award is India\'s highest sporting honour (renamed from Rajiv Gandhi Khel Ratna in 2021).',
+      'Republic Day: 26 January. Independence Day: 15 August. Gandhi Jayanti: 2 October.',
+      'International Yoga Day is observed on 21 June every year since 2015.',
+      'Teachers\' Day (5 September) marks the birthday of Dr. Sarvepalli Radhakrishnan; Children\'s Day (14 November) marks the birthday of Jawaharlal Nehru.',
+    ]},
+  ]},
+  computer: { label:'💻 Computer Awareness', topics: [
+    { title:'Basics', facts:[
+      'CPU (Central Processing Unit) is often called the "brain" of the computer.',
+      'RAM (Random Access Memory) is volatile — its data is lost when power is off; ROM (Read Only Memory) is non-volatile.',
+      '1 Byte = 8 bits; binary system uses base 2, with digits 0 and 1.',
+      'Charles Babbage is regarded as the "Father of the Computer" for his Analytical Engine design.',
+    ]},
+    { title:'Internet & Generations', facts:[
+      'The World Wide Web (WWW) was invented by Tim Berners-Lee in 1989 at CERN.',
+      'HTTP stands for HyperText Transfer Protocol; URL stands for Uniform Resource Locator.',
+      'Computer generations: 1st — vacuum tubes, 2nd — transistors, 3rd — integrated circuits (ICs), 4th — microprocessors, 5th — AI-based systems.',
+    ]},
+  ]},
+};
+
+// Topic-wise quiz bank — one array of MCQs per GK_DATA topic (same subject keys & topic order).
+const GK_QUIZ = {
+  history: [
+    { topic:'भारत का इतिहास', questions:[
+      { q:'सिन्धु घाटी सभ्यता के दो प्रमुख स्थल कौन-से हैं?', options:['हड़प्पा और मोहनजोदड़ो','दिल्ली और आगरा','पाटलिपुत्र और उज्जैन','तक्षशिला और नालंदा'], answer:0 },
+      { q:'उपलब्ध साक्ष्यों के आधार पर "आद्य ऐतिहासिक काल" किस अवधि के मध्य माना जाता है?', options:['20 लाख – 3000 ई.पू.','3000 – 600 ई.पू.','600 ई.पू. के बाद','1200 – 600 ई.पू.'], answer:1 },
+      { q:'मनुष्य द्वारा बनाया गया पहला औजार कौन-सा माना जाता है?', options:['कुल्हाड़ी','हल','चाक','चाकू'], answer:0 },
+      { q:'मनुष्य ने सर्वप्रथम किस पशु को पालतू बनाया था?', options:['बैल','कुत्ता','घोड़ा','बकरी'], answer:1 },
+      { q:'हड़प्पा सभ्यता की खोज वर्ष 1921 में किसने की थी?', options:['राखलदास बनर्जी','दयाराम साहनी','जॉन मार्शल','आर.एस. बिष्ट'], answer:1 },
+      { q:'हड़प्पा सभ्यता किस युग की सभ्यता मानी जाती है?', options:['पाषाण युग','कांस्य युग','लौह युग','ताम्र-पाषाण युग'], answer:1 },
+      { q:'सिन्धु घाटी सभ्यता की लिपि किस दिशा में लिखी जाती थी?', options:['बाईं से दाईं ओर','दाईं से बाईं ओर','ऊपर से नीचे','कोई निश्चित दिशा नहीं'], answer:1 },
+      { q:'मोहनजोदड़ो से प्राप्त वृहत् स्नानागार का प्रयोग किसलिए किया जाता था?', options:['पेयजल संग्रहण','आनुष्ठानिक स्नान','कृषि सिंचाई','वस्त्र रंगाई'], answer:1 },
+      { q:'सिन्धु सभ्यता का वह एकमात्र स्थल कौन-सा था, जिसका निचला शहर भी किले से घिरा था?', options:['लोथल','कालीबंगा','हड़प्पा','धौलावीरा'], answer:1 },
+      { q:'विश्व में सर्वप्रथम कपास की खेती कहाँ शुरू हुई, जिसे यूनानियों ने "सिण्डॉन" कहा?', options:['मेसोपोटामिया','मिस्र','सिन्धु घाटी','फारस'], answer:2 },
+      { q:'सिन्धु सभ्यता में व्यापार किस माध्यम से होता था, क्योंकि यहाँ सिक्के नहीं मिले हैं?', options:['स्वर्ण मुद्रा','वस्तु-विनिमय','चाँदी के सिक्के','ताम्र मुद्रा'], answer:1 },
+      { q:'बन्दरगाह (डॉक-यार्ड) के साक्ष्य किस स्थल से मिले हैं?', options:['कालीबंगा','लोथल','रोपड़','बनावली'], answer:1 },
+      { q:'भारत में हड़प्पा सभ्यता का सबसे बड़ा ज्ञात स्थल कौन-सा है?', options:['धौलावीरा','कालीबंगा','राखीगढ़ी','लोथल'], answer:2 },
+      { q:'मोहनजोदड़ो से प्राप्त मुहर पर उत्कीर्ण त्रिमुखी देवता को किस नाम से जाना जाता है?', options:['इन्द्र','पशुपति शिव','वरुण','ब्रह्मा'], answer:1 },
+      { q:'मानव के साथ कुत्ते को दफनाने का साक्ष्य किस स्थल से मिला है?', options:['रोपड़','सुरकोटदा','बनावली','रंगपुर'], answer:0 },
+    ]},
+  ],
+  geography: [
+    { topic:'Physical Features', questions:[
+      { q:'India ki sabse unchi choti kaunsi hai?', options:['Nanda Devi','Kangchenjunga','K2','Everest'], answer:1 },
+      { q:'Himalaya ka sabse uncha hissa kya kehlata hai?', options:['Shivalik','Himachal','Himadri (Greater Himalayas)','Trans-Himalaya'], answer:2 },
+      { q:'Inme se kaunsa India ka physical division nahi hai?', options:['Northern Plains','Peninsular Plateau','Coastal Plains','Continental Shelf Plains'], answer:3 },
+    ]},
+    { topic:'Rivers', questions:[
+      { q:'India ki sabse lambi nadi (within India) kaunsi hai?', options:['Godavari','Yamuna','Ganga','Brahmaputra'], answer:2 },
+      { q:'"Dakshin Ganga" kise kaha jaata hai?', options:['Krishna','Godavari','Kaveri','Narmada'], answer:1 },
+      { q:'Kaunsi nadiyan pashchim (west) me Arabian Sea me girti hain?', options:['Ganga & Yamuna','Narmada & Tapi','Krishna & Godavari','Mahanadi & Kaveri'], answer:1 },
+    ]},
+    { topic:'States, Climate & Wildlife', questions:[
+      { q:'Area ke hisaab se India ka sabse bada rajya kaunsa hai?', options:['Madhya Pradesh','Rajasthan','Maharashtra','Uttar Pradesh'], answer:1 },
+      { q:'India ka sabse purana national park kaunsa hai?', options:['Kaziranga','Gir','Jim Corbett','Sundarbans'], answer:2 },
+      { q:'Asiatic lion kis park me paya jaata hai?', options:['Kaziranga','Gir National Park','Ranthambore','Bandhavgarh'], answer:1 },
+    ]},
+  ],
+  polity: [
+    { topic:'The Constitution', questions:[
+      { q:'Bhartiya Samvidhan kab laagu hua tha?', options:['26 Nov 1949','26 Jan 1950','15 Aug 1947','2 Oct 1950'], answer:1 },
+      { q:'Drafting Committee ke Chairman kaun the?', options:['Rajendra Prasad','Jawaharlal Nehru','Dr. B.R. Ambedkar','Sardar Patel'], answer:2 },
+      { q:'Bhartiya Samvidhan ne Fundamental Rights kis desh se liye?', options:['UK','USA','Ireland','Canada'], answer:1 },
+    ]},
+    { topic:'Rights & Duties', questions:[
+      { q:'"Socialist" aur "Secular" shabd Preamble me kis amendment se jode gaye?', options:['42nd Amendment','44th Amendment','73rd Amendment','86th Amendment'], answer:0 },
+      { q:'Kul kitne Fundamental Rights hain?', options:['5','6','7','8'], answer:1 },
+      { q:'Fundamental Duties kis Article me hain?', options:['Article 32','Article 51A','Article 356','Article 370'], answer:1 },
+    ]},
+    { topic:'Government Structure', questions:[
+      { q:'Parliament ke do sadan kaunse hain?', options:['Lok Sabha & Vidhan Sabha','Lok Sabha & Rajya Sabha','Rajya Sabha & Vidhan Parishad','Loksabha & Parliament'], answer:1 },
+      { q:'President\'s Rule kis Article me hai?', options:['Article 352','Article 356','Article 360','Article 370'], answer:1 },
+      { q:'GST kis amendment se laagu hua?', options:['101st Amendment','73rd Amendment','86th Amendment','44th Amendment'], answer:0 },
+    ]},
+  ],
+  economy: [
+    { topic:'Planning & Institutions', questions:[
+      { q:'NITI Aayog ne Planning Commission ko kab replace kiya?', options:['2014','2015','2016','2017'], answer:1 },
+      { q:'RBI ki sthapna kab hui?', options:['1 April 1935','15 Aug 1947','26 Jan 1950','1 Jan 1949'], answer:0 },
+      { q:'First Five Year Plan kis model par based tha?', options:['Mahalanobis model','Harrod-Domar model','Solow model','Nehru model'], answer:1 },
+    ]},
+    { topic:'Revolutions & Reforms', questions:[
+      { q:'Green Revolution India me kis se juda hai?', options:['Verghese Kurien','M.S. Swaminathan','Manmohan Singh','C. Rajagopalachari'], answer:1 },
+      { q:'1991 ke reforms (LPG) kis PM ke daur me hue?', options:['Rajiv Gandhi','P.V. Narasimha Rao','Atal Bihari Vajpayee','Manmohan Singh'], answer:1 },
+      { q:'GST kab laagu hua tha?', options:['1 July 2016','1 July 2017','1 Jan 2017','1 April 2017'], answer:1 },
+    ]},
+  ],
+  science: [
+    { topic:'Physics Basics', questions:[
+      { q:'Force ka SI unit kya hai?', options:['Joule','Newton','Watt','Pascal'], answer:1 },
+      { q:'Speed of light (vacuum) approx kitni hai?', options:['3×10⁵ m/s','3×10⁶ m/s','3×10⁷ m/s','3×10⁸ m/s'], answer:3 },
+      { q:'Power ka SI unit kya hai?', options:['Watt','Newton','Joule','Ampere'], answer:0 },
+    ]},
+    { topic:'Chemistry Basics', questions:[
+      { q:'Electron ki khoj kisne ki?', options:['James Chadwick','J.J. Thomson','Ernest Rutherford','Niels Bohr'], answer:1 },
+      { q:'pH scale ka range kya hai?', options:['0–7','0–14','1–10','0–100'], answer:1 },
+      { q:'Neutron ki khoj kisne ki?', options:['J.J. Thomson','James Chadwick','John Dalton','Marie Curie'], answer:1 },
+    ]},
+    { topic:'Biology Basics', questions:[
+      { q:'"Cell" naam sabse pehle kisne diya?', options:['Robert Hooke','Charles Darwin','Louis Pasteur','Gregor Mendel'], answer:0 },
+      { q:'ABO blood group system kisne discover kiya?', options:['Karl Landsteiner','Alexander Fleming','Edward Jenner','Robert Koch'], answer:0 },
+      { q:'Scurvy kis vitamin ki kami se hoti hai?', options:['Vitamin A','Vitamin B1','Vitamin C','Vitamin D'], answer:2 },
+    ]},
+  ],
+  awareness: [
+    { topic:'National Symbols', questions:[
+      { q:'National Anthem ("Jana Gana Mana") kisne likha?', options:['Bankim Chandra Chattopadhyay','Rabindranath Tagore','Sarojini Naidu','Muhammad Iqbal'], answer:1 },
+      { q:'India ka National Animal kaunsa hai?', options:['Lion','Tiger','Elephant','Peacock'], answer:1 },
+      { q:'National Emblem ka motto kya hai?', options:['Vande Mataram','Satyameva Jayate','Jai Hind','Satyam Shivam Sundaram'], answer:1 },
+    ]},
+    { topic:'Awards & Days', questions:[
+      { q:'Bharat Ratna kab shuru hua tha?', options:['1950','1954','1961','1971'], answer:1 },
+      { q:'International Yoga Day kab manaya jaata hai?', options:['5 June','21 June','15 August','2 October'], answer:1 },
+      { q:'Teachers\' Day kis din manaya jaata hai?', options:['14 November','5 September','2 October','26 January'], answer:1 },
+    ]},
+  ],
+  computer: [
+    { topic:'Basics', questions:[
+      { q:'Computer ka "brain" kise kaha jaata hai?', options:['RAM','CPU','ROM','Motherboard'], answer:1 },
+      { q:'1 Byte me kitne bits hote hain?', options:['4','8','16','32'], answer:1 },
+      { q:'"Father of the Computer" kise kaha jaata hai?', options:['Alan Turing','Charles Babbage','Tim Berners-Lee','Bill Gates'], answer:1 },
+    ]},
+    { topic:'Internet & Generations', questions:[
+      { q:'World Wide Web (WWW) ka avishkaar kisne kiya?', options:['Tim Berners-Lee','Charles Babbage','Bill Gates','Steve Jobs'], answer:0 },
+      { q:'Computer ki 3rd generation kis technology par based thi?', options:['Vacuum Tubes','Transistors','Integrated Circuits (ICs)','Microprocessors'], answer:2 },
+      { q:'HTTP ka full form kya hai?', options:['HyperText Transfer Protocol','High Transfer Text Protocol','HyperText Technical Process','Home Text Transfer Protocol'], answer:0 },
+    ]},
+  ],
+};
+
+function startLevelTrack(op, id){
+  const track = LEVEL_TRACKS[op];
+  const lvl = track && track.find(l=>l.id===id);
+  if(!lvl) return;
+  state.courseLevel = null;
+  state.activeLevelRun = { op, id };
+  state.settings = {
+    op,
+    rowCount: 2,
+    digitA: lvl.digitA || 1,
+    digitB: lvl.digitB || 1,
+    qCount: lvl.qCount,
+    range: lvl.range || null,
+  };
+  startPractice(false);
+}
+const OP_LABEL = { add:'Jod (+)', sub:'Ghata (−)', mul:'Guna (×)', div:'Bhaag (÷)', mix:'🔀 Mix (+ − × ÷)', lcm:'LCM', square:'Square (n²)', percent:'Percentage (%)', table:'Tables (×)', cbrt:'Cube Root (∛)', sqdrill:'Squares Drill (n²)' };
+const OP_SYMBOL = { add:'+', sub:'−', mul:'×', div:'÷' };
+const TIER_LABEL = { 1:'1-Digit', 2:'2-Digit', 3:'3-Digit', 4:'4-Digit' };
+const RANK_TIERS = [
+  { tier:'Bronze',      emoji:'🥉', min:0,  max:20 },
+  { tier:'Silver',      emoji:'🥈', min:20, max:35 },
+  { tier:'Gold',        emoji:'🥇', min:35, max:55 },
+  { tier:'Diamond',     emoji:'💎', min:55, max:80 },
+  { tier:'Heroic',      emoji:'⚔️', min:80, max:93 },
+  { tier:'Grandmaster', emoji:'👑', min:93, max:100 },
+];
+
+function tierFromScore(score){
+  for(let i=0;i<RANK_TIERS.length;i++){
+    const t = RANK_TIERS[i];
+    if(score>=t.min && score<t.max){
+      const pos = (score - t.min) / (t.max - t.min); // 0..1 progress within this tier
+      const sub = Math.min(4, Math.floor(pos*4) + 1); // 1 = just entered tier, 4 = right at the edge of promotion
+      return { ...t, next: RANK_TIERS[i+1]||null, sub };
+    }
+  }
+  const last = RANK_TIERS[RANK_TIERS.length-1];
+  return { ...last, next:null, sub:4 };
+}
+function computeRank(op, avgTime, accuracy, digitTier){
+  const mult = TIER_MULT[Math.min(4, digitTier||1)] || 1; // bigger numbers get fair extra time
+  const thresh = (THRESH[op] || 5) * mult;
+  const ratio = avgTime/thresh;
+  const speedScore = Math.max(0, 1 - Math.min(ratio,2)/2) * 100; // 100 = instant, 0 = very slow
+  const score = Math.round(accuracy*0.5 + speedScore*0.5);
+  const t = tierFromScore(score);
+  const progressPct = t.next ? Math.round(((score - t.min)/(t.max - t.min))*100) : 100;
+  return { ...t, ratio, score, progressPct };
+}
+
+/* ================= HELPERS ================= */
+function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function randDigit(len){
+  if(len<=1) return randInt(1,9);
+  const min = Math.pow(10,len-1), max = Math.pow(10,len)-1;
+  return randInt(min,max);
+}
+function gcd(a,b){ return b===0? a : gcd(b,a%b); }
+function lcm(a,b){ return (a*b)/gcd(a,b); }
+
+function formatPulse(sec){
+  // "God level" precision display: whole seconds + millisecond "pulse", e.g. 1s 989ms
+  const s = Math.floor(sec);
+  const ms = Math.round((sec - s) * 1000);
+  return `${s}s ${String(ms).padStart(3,'0')}ms`;
+}
+function comboKey(a,b){ return a+"_"+b; }
+function tierOf(a,b){ return Math.min(4, Math.max(String(Math.abs(a)).length, String(Math.abs(b)).length)); }
+
+const PERCENT_TIERS = {
+  1: [10,20,25,50],
+  2: [5,15,35,40,60,75],
+  3: [12,18,24,32,45,65,85,90],
+};
+function randPercentQ(tier, baseDigits){
+  const set = PERCENT_TIERS[Math.min(3, tier||1)] || PERCENT_TIERS[1];
+  const p = set[randInt(0,set.length-1)];
+  const mult = 100/gcd(100,p); // base must be a multiple of this for a whole-number answer
+  const maxK = Math.max(1, Math.floor(Math.pow(10,baseDigits||1)/mult));
+  const base = mult*randInt(1,maxK);
+  return { p, base, answer:(p*base)/100 };
+}
+
+/* ================= QUESTION GENERATION ================= */
+function generateQuestion(){
+  const s = state.settings;
+  if(s.op === 'mix'){
+    const pick = ['add','sub','mul','div'][randInt(0,3)];
+    if(pick==='add'){
+      const a = randDigit(s.digitA), b = randDigit(s.digitB);
+      return { text: `${a} + ${b}`, answer: a+b, tag: {op:'add', a, b} };
+    }
+    if(pick==='sub'){
+      let a = randDigit(s.digitA), b = randDigit(s.digitB);
+      if(a<b) [a,b]=[b,a];
+      return { text: `${a} - ${b}`, answer: a-b, tag: {op:'sub', a, b} };
+    }
+    if(pick==='mul'){
+      const a = randDigit(s.digitA), b = randDigit(s.digitB);
+      return { text: `${a} × ${b}`, answer: a*b, tag: {op:'mul', a, b} };
+    }
+    const divisor = Math.max(1, randDigit(s.digitB));
+    const quotient = randDigit(s.digitA);
+    const dividend = divisor*quotient;
+    return { text: `${dividend} ÷ ${divisor}`, answer: quotient, tag: {op:'div', a:divisor, b:quotient} };
+  }
+  if(s.op === 'add' && s.rowCount > 2){
+    const nums = [];
+    for(let i=0;i<s.rowCount;i++) nums.push(randDigit(s.digitA));
+    const answer = nums.reduce((x,y)=>x+y,0);
+    return { text: nums.join(' + '), answer, tag:null, nums };
+  }
+  if(s.op === 'add' && s.range){
+    const [lo,hi] = s.range;
+    const a = randInt(lo,hi), b = randInt(lo,hi);
+    return { text: `${a} + ${b}`, answer: a+b, tag: {op:'add', a, b} };
+  }
+  if(s.op === 'add' && s.carryOnly && s.digitA===1 && s.digitB===1){
+    const a = randInt(1,9);
+    const b = randInt(Math.max(1,10-a), 9); // forces a+b >= 10, e.g. 9+1, 7+6, 6+5 — never 3+4, 8+1
+    return { text: `${a} + ${b}`, answer: a+b, tag: {op:'add', a, b} };
+  }
+  if(s.op === 'add'){
+    const a = randDigit(s.digitA), b = randDigit(s.digitB);
+    const answer = a+b;
+    return { text: `${a} + ${b}`, answer, tag: {op:'add', a, b} };
+  }
+  if(s.op === 'sub'){
+    let a = randDigit(s.digitA), b = randDigit(s.digitB);
+    if(a<b) [a,b]=[b,a];
+    return { text: `${a} - ${b}`, answer: a-b, tag: {op:'sub', a, b} };
+  }
+  if(s.op === 'mul'){
+    const a = randDigit(s.digitA), b = randDigit(s.digitB);
+    return { text: `${a} × ${b}`, answer: a*b, tag: {op:'mul', a, b} };
+  }
+  if(s.op === 'div'){
+    const divisor = Math.max(1, randDigit(s.digitB));
+    const quotient = randDigit(s.digitA);
+    const dividend = divisor*quotient;
+    return { text: `${dividend} ÷ ${divisor}`, answer: quotient, tag: {op:'div', a:divisor, b:quotient} };
+  }
+  if(s.op === 'lcm'){
+    const a = Math.max(1,randDigit(s.digitA)), b = Math.max(1,randDigit(s.digitB));
+    return { text: `LCM(${a}, ${b})`, answer: lcm(a,b), tag:null };
+  }
+  if(s.op === 'square'){
+    const n = randDigit(s.digitA);
+    return { text: `${n}²`, answer: n*n, tag:null };
+  }
+  if(s.op === 'percent'){
+    const { p, base, answer } = randPercentQ(s.digitA, s.digitB);
+    return { text: `${p}% of ${base}`, answer, tag:null };
+  }
+}
+
+function questionFromCombo(op,a,b){
+  if(op==='add') return { text:`${a} + ${b}`, answer:a+b, tag:{op,a,b} };
+  if(op==='sub') return { text:`${a} - ${b}`, answer:a-b, tag:{op,a,b} };
+  if(op==='mul') return { text:`${a} × ${b}`, answer:a*b, tag:{op,a,b} };
+  if(op==='div') return { text:`${a*b} ÷ ${a}`, answer:b, tag:{op,a,b} };
+}
+
+function shuffleArr(arr){
+  const a = [...arr];
+  for(let i=a.length-1;i>0;i--){ const j=randInt(0,i); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+
+/* ================= SPEAK TABLES — bolke pahada sunayein (Hindi ya English) ================= */
+// 0 se 100 tak Hindi ginti — 100 se aage "<hundreds> sau <remainder>" jodkar banaya jaata hai
+const HI_WORDS = ['शून्य','एक','दो','तीन','चार','पांच','छह','सात','आठ','नौ','दस',
+'ग्यारह','बारह','तेरह','चौदह','पंद्रह','सोलह','सत्रह','अठारह','उन्नीस','बीस',
+'इक्कीस','बाईस','तेईस','चौबीस','पच्चीस','छब्बीस','सत्ताईस','अट्ठाईस','उनतीस','तीस',
+'इकतीस','बत्तीस','तैंतीस','चौंतीस','पैंतीस','छत्तीस','सैंतीस','अड़तीस','उनतालीस','चालीस',
+'इकतालीस','बयालीस','तैंतालीस','चवालीस','पैंतालीस','छियालीस','सैंतालीस','अड़तालीस','उनचास','पचास',
+'इक्यावन','बावन','तिरपन','चौवन','पचपन','छप्पन','सत्तावन','अट्ठावन','उनसठ','साठ',
+'इकसठ','बासठ','तिरसठ','चौंसठ','पैंसठ','छियासठ','सरसठ','अड़सठ','उनहत्तर','सत्तर',
+'इकहत्तर','बहत्तर','तिहत्तर','चौहत्तर','पचहत्तर','छिहत्तर','सतहत्तर','अठहत्तर','उनासी','अस्सी',
+'इक्यासी','बयासी','तिरासी','चौरासी','पचासी','छियासी','सत्तासी','अट्ठासी','नवासी','नब्बे',
+'इक्यानवे','बानवे','तिरानवे','चौरानवे','पचानवे','छियानवे','सत्तानवे','अट्ठानवे','निन्यानवे','सौ'];
+
+function numberToWordsHI(n){
+  if(n===0) return HI_WORDS[0];
+  if(n<0) return 'ऋण ' + numberToWordsHI(-n);
+  if(n<=100) return HI_WORDS[n];
+  const h = Math.floor(n/100), r = n%100;
+  return HI_WORDS[h] + ' सौ' + (r ? ' ' + HI_WORDS[r] : '');
+}
+
+// Traditional pahada recitation words for 1x-10x (jaise "ekam", "dooni", "tiya"); 11x-12x ke liye
+// seedha number + "guna" (times) bola jaata hai kyunki unke koi alag traditional shabd nahi hote.
+const HI_PAHADA_WORD = {1:'एकम',2:'दूनी',3:'तिया',4:'चौका',5:'पांच',6:'छक्के',7:'सत्ते',8:'आठे',9:'नवे',10:'दहाई'};
+
+const EN_ONES = ['zero','one','two','three','four','five','six','seven','eight','nine','ten',
+'eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'];
+const EN_TENS = ['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
+
+function numberToWordsEN(n){
+  if(n===0) return 'zero';
+  if(n<0) return 'minus ' + numberToWordsEN(-n);
+  if(n<20) return EN_ONES[n];
+  if(n<100) return EN_TENS[Math.floor(n/10)] + (n%10 ? '-' + EN_ONES[n%10] : '');
+  if(n<1000){
+    const h = Math.floor(n/100), r = n%100;
+    return EN_ONES[h] + ' hundred' + (r ? ' ' + numberToWordsEN(r) : '');
+  }
+  const th = Math.floor(n/1000), r = n%1000;
+  return numberToWordsEN(th) + ' thousand' + (r ? ' ' + numberToWordsEN(r) : '');
+}
+
+// Classic English times-table recitation style: "Eleven ones are eleven, Eleven twos are twenty-two..."
+const EN_MULT_PLURAL = {1:'ones',2:'twos',3:'threes',4:'fours',5:'fives',6:'sixes',7:'sevens',8:'eights',9:'nines',10:'tens',11:'elevens',12:'twelves'};
+
+// One spoken line per multiplier (1x through 12x), in the chosen medium (Hindi pahada-style or English table-style)
+function buildTableSpeechLines(tableNum, medium){
+  const lines = [];
+  for(let m=1; m<=12; m++){
+    const product = tableNum * m;
+    if(medium === 'en'){
+      const label = numberToWordsEN(tableNum);
+      const cap = label.charAt(0).toUpperCase() + label.slice(1);
+      lines.push(`${cap} ${EN_MULT_PLURAL[m]} are ${numberToWordsEN(product)}.`);
+    } else {
+      const multWord = m <= 10 ? HI_PAHADA_WORD[m] : (numberToWordsHI(m) + ' गुणा');
+      lines.push(`${numberToWordsHI(tableNum)} ${multWord} ${numberToWordsHI(product)}`);
+    }
+  }
+  return lines;
+}
+
+function getAvailableVoices(){
+  if(!('speechSynthesis' in window)) return [];
+  return window.speechSynthesis.getVoices() || [];
+}
+
+function pickSpeechVoice(medium){
+  const voices = getAvailableVoices();
+  if(!voices.length) return null;
+  if(state.speakSettings.voiceURI){
+    const chosen = voices.find(v => v.voiceURI === state.speakSettings.voiceURI);
+    if(chosen) return chosen;
+  }
+  const langPrefix = medium === 'en' ? 'en' : 'hi';
+  return voices.find(v => v.lang && v.lang.toLowerCase().startsWith(langPrefix)) || voices[0];
+}
+
+// Naye voice model nahi bana sakte — yeh device par pehle se installed voices me se
+// sabse behtar Indian male/female voice DHOONDTA hai (jaana-maana naam pattern + hi-IN/en-IN lang se).
+const INDIAN_FEMALE_NAMES = ['heera','veena','lekha','kalpana','swara','divya','priya','neerja','ananya','kajal'];
+const INDIAN_MALE_NAMES = ['ravi','prabhat','hemant','rishi','madhur','arjun','aditya','rohan'];
+
+function findIndianVoice(gender){
+  const voices = getAvailableVoices();
+  if(!voices.length) return null;
+  const indianVoices = voices.filter(v => v.lang && /^(hi-in|en-in)/i.test(v.lang));
+  const nameList = gender === 'female' ? INDIAN_FEMALE_NAMES : INDIAN_MALE_NAMES;
+  // pehle: Indian-lang voice jiska naam jaane-maane male/female pattern se milta ho
+  let match = indianVoices.find(v => nameList.some(n => v.name.toLowerCase().includes(n)));
+  if(match) return match;
+  // agar naam se pehchaan na ho, to koi bhi Indian-lang voice de do (behtar se behtar available)
+  if(indianVoices.length) return indianVoices[0];
+  // Indian-lang voice bilkul na ho to naam pattern kisi bhi voice me dhoondo (kai fonts locale-agnostic hote hain)
+  match = voices.find(v => nameList.some(n => v.name.toLowerCase().includes(n)));
+  return match || null;
+}
+
+function useIndianVoice(gender){
+  const found = findIndianVoice(gender);
+  if(!found){
+    alert('Aapke device par abhi koi Indian voice installed nahi hai.\n\nNeeche wale "📥 Awaaz Install Screen Kholein" button try karein — agar wo na chale to Settings → Text-to-speech output → voice data install karein, aur Hindi (India) ya English (India) voice download karein. Uske baad yeh button dobara use karein.');
+    return;
+  }
+  state.speakSettings.voiceURI = found.voiceURI;
+  render();
+}
+
+// Android ka apna "install TTS voice data" screen seedha kholne ki koshish — yeh sirf tab kaam
+// karta hai jab app WebView/browser Android intent:// links ko support karta ho. Agar na chale
+// to device khud "cannot open" dikha dega — is wajah se neeche manual steps bhi hamesha likhe hain.
+function openTtsVoiceInstaller(){
+  try{
+    window.location.href = 'intent://#Intent;action=android.speech.tts.engine.INSTALL_TTS_DATA;end';
+  }catch(e){
+    alert('Yeh device/browser seedha install screen nahi khol pa raha.\n\nManually jayein: Settings → General Management (ya Accessibility) → Text-to-speech output → apne TTS engine (Google) ke settings icon → Install voice data → Hindi (India) ya English (India) download karein.');
+  }
+}
+
+function stopSpeakingTable(){
+  if('speechSynthesis' in window) window.speechSynthesis.cancel();
+  state.speakingActive = false;
+  state.speakingRow = null;
+  render();
+}
+
+function speakTable(tableNum){
+  if(!('speechSynthesis' in window)){
+    alert('Is browser/device me Text-to-Speech (bolne ki) suvidha available nahi hai.');
+    return;
+  }
+  window.speechSynthesis.cancel();
+  const medium = state.speakSettings.medium;
+  const lines = buildTableSpeechLines(tableNum, medium);
+  const voice = pickSpeechVoice(medium);
+  state.speakingActive = true;
+  state.speakingRow = null;
+  let i = 0;
+  const speakNext = ()=>{
+    if(!state.speakingActive || i >= lines.length){
+      state.speakingActive = false;
+      state.speakingRow = null;
+      render();
+      return;
+    }
+    const utt = new SpeechSynthesisUtterance(lines[i]);
+    if(voice) utt.voice = voice;
+    utt.lang = medium === 'en' ? 'en-US' : 'hi-IN';
+    utt.rate = state.speakSettings.rate || 0.9;
+    utt.pitch = state.speakSettings.pitch || 1;
+    state.speakingRow = i + 1;
+    render();
+    utt.onend = ()=>{ i++; speakNext(); };
+    utt.onerror = ()=>{ i++; speakNext(); };
+    window.speechSynthesis.speak(utt);
+  };
+  speakNext();
+}
+
+function speakTestPhrase(){
+  if(!('speechSynthesis' in window)){
+    alert('Is browser/device me Text-to-Speech (bolne ki) suvidha available nahi hai.');
+    return;
+  }
+  window.speechSynthesis.cancel();
+  const medium = state.speakSettings.medium;
+  const line = buildTableSpeechLines(2, medium)[2]; // "do tiya chhah" / "Two threes are six." — quick sample
+  const utt = new SpeechSynthesisUtterance(line);
+  const voice = pickSpeechVoice(medium);
+  if(voice) utt.voice = voice;
+  utt.lang = medium === 'en' ? 'en-US' : 'hi-IN';
+  utt.rate = state.speakSettings.rate || 0.9;
+  utt.pitch = state.speakSettings.pitch || 1;
+  window.speechSynthesis.speak(utt);
+}
+
+/* ================= LEARN TABLES + CUBE ROOTS + SQUARES ================= */
+function buildTableQuestions(tableNum, mode){
+  let mults = Array.from({length:12},(_,i)=>i+1); // 1x through 12x — covers 11 & 12 ka table fully
+  if(mode==='mix') mults = shuffleArr(mults);
+  return mults.map(i => ({ text:`${tableNum} × ${i}`, answer: tableNum*i, tag:null }));
+}
+
+function buildCubeQuestions(range, mode){
+  let nums = Array.from({length:range||12},(_,i)=>i+1); // 1³ through <range>³ (up to 100³)
+  if(mode==='mix') nums = shuffleArr(nums);
+  return nums.map(i => ({ text:`∛${i*i*i}`, answer:i, tag:null }));
+}
+
+function buildSquareQuestions(range, mode){
+  let nums = Array.from({length:range||12},(_,i)=>i+1); // 1² through <range>² (up to 100²)
+  if(mode==='mix') nums = shuffleArr(nums);
+  return nums.map(i => ({ text:`${i}²`, answer:i*i, tag:null }));
+}
+
+// The 3-2-1 countdown is skipped entirely when Blinking Mode is active (flash cards should
+// start flashing immediately) or when the person has turned the countdown off in Customize Practice.
+function sessionSkipsCountdown(questions){
+  if(!state.practiceCustomize.showCountdown) return true;
+  if(state.settings.blinkMode && questions.length && questions[0].nums && questions[0].nums.length > 1) return true;
+  return false;
+}
+
+function startTablesPractice(kind){
+  let questions;
+  if(kind==='table'){
+    const tableNum = state.tablesSettings.tableNum;
+    const mode = state.tablesSettings.mode;
+    questions = buildTableQuestions(tableNum, mode);
+    state.settings = { op:'table', tableNum, mode, qCount: questions.length };
+  } else if(kind==='cbrt'){
+    const mode = state.tablesSettings.cubeMode;
+    const range = state.tablesSettings.cubeRange;
+    questions = buildCubeQuestions(range, mode);
+    state.settings = { op:'cbrt', mode, range, qCount: questions.length };
+  } else {
+    const mode = state.tablesSettings.squareMode;
+    const range = state.tablesSettings.squareRange;
+    questions = buildSquareQuestions(range, mode);
+    state.settings = { op:'sqdrill', mode, range, qCount: questions.length };
+  }
+  state.masterMode = false;
+  state.courseLevel = null;
+  state.activeLevelRun = null;
+  state.session = { questions, index:0, results:[], qStart: performance.now(), firstKeyAt:null, countdown:3, liveCorrect:0, liveWrong:0, typedValue:'' };
+  state.tab = 'practice';
+  state.navMenuOpen = false;
+  if(sessionSkipsCountdown(questions)){
+    state.session.countdown = 0;
+    beginQuestion(state.session);
+  } else {
+    render();
+  }
+}
+
+/* ================= COMBO TRACKING ================= */
+const TIER_MULT = { 1:1, 2:1.7, 3:2.4, 4:3.2 }; // bigger numbers naturally take longer
+
+function recordCombo(tag, timeSec){
+  const { op, a, b } = tag;
+  const tier = tierOf(a,b);
+  const bucket = state.combos[op];
+  const key = comboKey(a,b);
+  if(!bucket[key]) bucket[key] = { a, b, tier, times:[], slow:false, fastStreak:0 };
+  const c = bucket[key];
+  c.times.push(timeSec);
+  if(c.times.length>5) c.times.shift();
+
+  const limit = (THRESH[op]||4) * (TIER_MULT[tier]||1);
+  if(timeSec > limit){
+    c.slow = true;
+    c.fastStreak = 0;
+  } else if(c.slow){
+    c.fastStreak++;
+    if(c.fastStreak >= 3){
+      delete bucket[key]; // graduated — hata do
+    }
+  }
+
+  // Leaderboard subsystem — record every calculation's best time, grouped by digit tier (1/2/3)
+  const rbucket = state.records[op];
+  if(rbucket){
+    const r = rbucket[key];
+    if(!r){
+      rbucket[key] = { a, b, tier, best: timeSec, attempts: 1, lastTime: timeSec };
+    } else {
+      r.attempts++;
+      r.lastTime = timeSec;
+      if(timeSec < r.best) r.best = timeSec;
+    }
+  }
+}
+
+function getWeakList(){
+  const list = [];
+  ['add','sub','mul','div'].forEach(op=>{
+    Object.values(state.combos[op]).forEach(c=>{
+      if(c.slow) list.push({op, a:c.a, b:c.b, tier:c.tier, avg: c.times.reduce((x,y)=>x+y,0)/c.times.length});
+    });
+  });
+  return list;
+}
+
+/* ================= PRACTICE FLOW ================= */
+function startPractice(fromMaster, opFilter){
+  state.masterMode = !!fromMaster;
+  let questions = [];
+  if(fromMaster){
+    let weak = getWeakList();
+    if(opFilter && opFilter!=='all') weak = weak.filter(w=>w.op===opFilter);
+    if(weak.length===0){ render(); return; }
+    questions = weak.map(w => ({ ...questionFromCombo(w.op,w.a,w.b) }));
+    // shuffle
+    for(let i=questions.length-1;i>0;i--){ const j=randInt(0,i); [questions[i],questions[j]]=[questions[j],questions[i]]; }
+  } else {
+    for(let i=0;i<state.settings.qCount;i++){
+      let q, tries = 0;
+      do{
+        q = generateQuestion();
+        tries++;
+      } while(
+        questions.length>0 &&
+        q.answer === questions[questions.length-1].answer &&
+        tries < 25
+      ); // avoid back-to-back questions with the same answer (e.g. 7+7=14 then 8+6=14)
+      questions.push(q);
+    }
+  }
+  state.session = { questions, index:0, results:[], qStart: performance.now(), firstKeyAt: null, countdown:3, liveCorrect:0, liveWrong:0, typedValue:'' };
+  state.tab = 'practice';
+  state.navMenuOpen = false;
+  if(sessionSkipsCountdown(questions)){
+    state.session.countdown = 0;
+    beginQuestion(state.session);
+  } else {
+    render();
+  }
+}
+
+function statsOf(times){
+  const n = times.length;
+  const sorted = [...times].sort((a,b)=>a-b);
+  const mean = times.reduce((s,t)=>s+t,0)/n;
+  const median = n%2 ? sorted[(n-1)/2] : (sorted[n/2-1]+sorted[n/2])/2;
+  const variance = times.reduce((s,t)=>s+(t-mean)*(t-mean),0)/n;
+  const stdDev = Math.sqrt(variance);
+  return { min: sorted[0], max: sorted[n-1], median, stdDev, mean };
+}
+
+function quitPractice(){
+  const sess = state.session;
+  if(sess && sess.index > 0){
+    const ok = confirm('Kya aap practice beech me chhodna chahte hain? Yeh session record nahi hoga.');
+    if(!ok) return;
+  }
+  if(practiceTickHandle){ clearInterval(practiceTickHandle); practiceTickHandle = null; }
+  if(countdownTickHandle){ clearInterval(countdownTickHandle); countdownTickHandle = null; }
+  if(blinkTickHandle){ clearTimeout(blinkTickHandle); blinkTickHandle = null; }
+  if(practiceKeydownHandler){ document.removeEventListener('keydown', practiceKeydownHandler); practiceKeydownHandler = null; }
+  state.session = null;
+  state.courseLevel = null;
+  state.activeLevelRun = null;
+  state.masterMode = false;
+  state.tab = 'setup';
+  state.navMenuOpen = false;
+  render();
+}
+
+// Starts a question: either the normal instant-display flow, or — for multi-number
+// addition rows with Blinking Mode on — flashes each number for ~1s one at a time
+// before the real stopwatch/input appear, so the learner has to hold them in memory.
+function beginQuestion(sess){
+  const q = sess.questions[sess.index];
+  sess.typedValue = '';
+  sess.firstKeyAt = null;
+  sess.mistakes = 0;
+  if(blinkTickHandle){ clearTimeout(blinkTickHandle); blinkTickHandle = null; }
+  if(state.settings.blinkMode && q.nums && q.nums.length > 1){
+    startBlinkSequence(sess);
+  } else {
+    sess.blinking = false;
+    sess.qStart = performance.now();
+    render();
+  }
+}
+
+function startBlinkSequence(sess){
+  sess.blinking = true;
+  sess.blinkIndex = -1;
+  sess.blinkShow = false;
+  advanceBlink(sess);
+}
+
+function advanceBlink(sess){
+  if(state.session !== sess) return; // session was quit/replaced mid-sequence
+  sess.blinkIndex++;
+  const q = sess.questions[sess.index];
+  if(sess.blinkIndex >= q.nums.length){
+    // all numbers shown — hand off to the real timer + input
+    sess.blinking = false;
+    sess.qStart = performance.now();
+    sess.firstKeyAt = null;
+    sess.typedValue = '';
+    render();
+    return;
+  }
+  sess.blinkShow = true;
+  render();
+  blinkTickHandle = setTimeout(()=>{
+    if(state.session !== sess) return;
+    sess.blinkShow = false; // brief blank gap so back-to-back same digits still register as separate flashes
+    render();
+    blinkTickHandle = setTimeout(()=> advanceBlink(sess), 220);
+  }, 780); // ~1s per number including the gap below
+}
+
+function submitAnswer(userVal){
+  const sess = state.session;
+  const q = sess.questions[sess.index];
+  const correct = Number(userVal) === q.answer;
+
+  if(!correct){
+    sess.mistakes = (sess.mistakes||0) + 1;
+    sess.liveWrong = (sess.liveWrong||0) + 1; // accuracy meter dips on a wrong answer
+    return false; // caller shows red, question stays, timer keeps running
+  }
+
+  const now = performance.now();
+  const timeSec = (now - sess.qStart)/1000;
+  const reactionSec = sess.firstKeyAt!=null ? (sess.firstKeyAt - sess.qStart)/1000 : timeSec;
+  const firstTry = (sess.mistakes||0)===0; // no wrong attempts before landing on the right answer
+  sess.results.push({ text:q.text, answer:q.answer, userVal, time:timeSec, reaction:reactionSec, correct:true, firstTry, mistakes: sess.mistakes||0 });
+  if(q.tag) recordCombo(q.tag, timeSec);
+  sess.liveCorrect = (sess.liveCorrect||0) + 1; // accuracy meter rises on a correct answer
+  sess.mistakes = 0;
+  sess.firstKeyAt = null;
+
+  const fastLimit = THRESH[state.settings.op] || 5;
+  const wasFast = timeSec <= fastLimit && (sess.results[sess.results.length-1].mistakes===0);
+  sess.streak = wasFast ? (sess.streak||0)+1 : 0;
+  sess.bestStreak = Math.max(sess.bestStreak||0, sess.streak);
+
+  sess.index++;
+  if(sess.index >= sess.questions.length){
+    state.lastResults = sess.results;
+    const total = sess.results.length;
+    const correctCt = sess.results.filter(r=>r.firstTry).length; // wrong attempts on a question knock it out of accuracy, even though it was eventually solved
+    const totalTime = sess.results.reduce((s,r)=>s+r.time,0);
+    const avgTime = totalTime/total;
+    const accuracy = (correctCt/total)*100;
+    const timeStats = statsOf(sess.results.map(r=>r.time));
+    const avgReaction = sess.results.reduce((s,r)=>s+(r.reaction||r.time),0)/total;
+    const op = state.settings.op;
+    const s = state.settings;
+    const digitTier = Math.min(4, Math.max(s.digitA||1, s.digitB||1));
+    const rank = computeRank(op, avgTime, accuracy, digitTier);
+    const digitInfo = op==='add' && s.rowCount>2
+      ? `${s.rowCount} numbers × ${s.digitA}-digit`
+      : op==='square' ? `${s.digitA}-digit number`
+      : op==='percent' ? `Percent tier ${s.digitA} · base ${s.digitB}-digit`
+      : op==='table' ? `${s.tableNum} ka Table · ${s.mode==='mix'?'Mix':'Normal'}`
+      : op==='cbrt' ? `Cube Roots (1³–${s.range||12}³) · ${s.mode==='mix'?'Mix':'Normal'}`
+      : op==='sqdrill' ? `Squares (1²–${s.range||12}²) · ${s.mode==='mix'?'Mix':'Normal'}`
+      : `${s.digitA}-digit ${op==='div'?'(jawaab)':''} & ${s.digitB}-digit ${op==='div'?'(divisor)':''}`;
+    state.history.push({
+      id: state.history.length+1,
+      time: new Date().toLocaleTimeString('hi-IN',{hour:'2-digit',minute:'2-digit'}),
+      op, opLabel: OP_LABEL[op],
+      master: state.masterMode,
+      total, correctCt, accuracy, avgTime, totalTime,
+      rank, digitInfo, bestStreak: sess.bestStreak||0,
+      timeStats, avgReaction,
+      digitA: s.digitA||null, digitB: s.digitB||null, digitTier,
+      rowCount: (op==='add') ? (s.rowCount||2) : null,
+      details: sess.results.map(r=>({ text:r.text, time:r.time, reaction:r.reaction, correct:r.correct, firstTry:r.firstTry, mistakes:r.mistakes||0 })),
+    });
+    if(!state.bestRank[op] || rank.score > state.bestRank[op].score){
+      state.bestRank[op] = { tier:rank.tier, emoji:rank.emoji, score:rank.score, sub:rank.sub };
+    }
+    if(state.courseLevel){
+      const lvl = levelById(state.courseLevel);
+      const pass = lvl ? (accuracy >= lvl.minAccuracy && avgTime <= lvl.maxAvgTime) : false;
+      if(pass){
+        state.course.completed[lvl.id] = { avgTime, accuracy };
+        if(state.course.unlocked <= lvl.id && lvl.id < COURSE_LEVELS.length){
+          state.course.unlocked = lvl.id + 1;
+        }
+      }
+      state.lastCourseResult = { levelId: state.courseLevel, pass, avgTime, accuracy, lvl };
+    } else {
+      state.lastCourseResult = null;
+    }
+    if(state.activeLevelRun){
+      const { op: lop, id: lid } = state.activeLevelRun;
+      const track = LEVEL_TRACKS[lop];
+      const lvl = track && track.find(l=>l.id===lid);
+      const prog = state.levelProgress[lop];
+      const pass = lvl ? (accuracy >= lvl.minAccuracy && avgTime <= lvl.maxAvgTime) : false;
+      if(lvl && prog){
+        if(pass){
+          prog.completed[lid] = { avgTime, accuracy };
+          if(prog.unlocked <= lid && lid < track.length){
+            prog.unlocked = lid + 1;
+          }
+        }
+        state.lastLevelResult = { op: lop, id: lid, pass, avgTime, accuracy, lvl, track };
+      }
+      state.activeLevelRun = null;
+    } else {
+      state.lastLevelResult = null;
+    }
+    state.session = null;
+    state.tab = 'results';
+    render();
+  } else {
+    beginQuestion(sess);
+  }
+  return true;
+}
+
+/* ================= RENDER ================= */
+// "Ready Steady Go" style countdown, in Hindi, shown instead of 3-2-1 when the person picks that style in Practice Customize
+const COUNTDOWN_WORDS_HI = { 3:'तैयार', 2:'सावधान', 1:'शुरू!' };
+
+const TABS = [
+  {id:'setup', label:'Setup'},
+  {id:'course', label:'Course'},
+  {id:'levels', label:'Beginner→Advanced'},
+  {id:'tables', label:'📋 Tables'},
+  {id:'learn', label:'📖 Learn (1-100)'},
+  {id:'gk', label:'📚 Static GK (CGL)'},
+  {id:'practice', label:'Practice'},
+  {id:'results', label:'Result'},
+  {id:'history', label:'History'},
+  {id:'rank', label:'Rank'},
+  {id:'analysis', label:'🔎 Analysis'},
+  {id:'progress', label:'Progress'},
+  {id:'tips', label:'Formulas'},
+  {id:'weak', label:'Kamzor Combos'},
+  {id:'leaderboard', label:'Leaderboard'},
+];
+
+function render(){
+  renderNav();
+  const m = document.getElementById('main');
+  if(state.tab==='setup') m.innerHTML = viewSetup();
+  else if(state.tab==='customize') m.innerHTML = viewCustomize();
+  else if(state.tab==='course') m.innerHTML = viewCourse();
+  else if(state.tab==='levels') m.innerHTML = viewLevels();
+  else if(state.tab==='tables') m.innerHTML = viewTables();
+  else if(state.tab==='learn') m.innerHTML = viewLearn();
+  else if(state.tab==='gk') m.innerHTML = viewGK();
+  else if(state.tab==='practice') m.innerHTML = viewPractice();
+  else if(state.tab==='results') m.innerHTML = viewResults();
+  else if(state.tab==='history') m.innerHTML = viewHistory();
+  else if(state.tab==='rank') m.innerHTML = viewRank();
+  else if(state.tab==='analysis') m.innerHTML = viewAnalysis();
+  else if(state.tab==='progress') m.innerHTML = viewProgress();
+  else if(state.tab==='tips') m.innerHTML = viewTips();
+  else if(state.tab==='weak') m.innerHTML = viewWeak();
+  else if(state.tab==='leaderboard') m.innerHTML = viewLeaderboard();
+  bindEvents();
+  renderPasswordModal();
+  saveState();
+}
+
+function renderNav(){
+  const nav = document.getElementById('tabbar');
+  const current = TABS.find(t=>t.id===state.tab) || (state.tab==='customize' ? {label:'🎛️ Practice Customize'} : TABS[0]);
+  const menuOpen = !!state.navMenuOpen;
+
+  nav.innerHTML = `
+    <div class="nav-bar-row">
+      <span class="nav-current">🧮 ${current.label}</span>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+        <button id="mediumToggleBtn" class="kebab-btn" style="width:auto;padding:0 12px;font-size:0.78rem;font-weight:700;" title="Speak Tables ki bhasha badlein">${state.speakSettings.medium==='en' ? '🇬🇧 EN' : '🇮🇳 हिं'}</button>
+        <button id="kebabBtn" class="kebab-btn ${menuOpen?'open':''}" aria-label="Menu" aria-expanded="${menuOpen}">⋮</button>
+      </div>
+    </div>
+    ${menuOpen ? `
+    <div class="nav-menu-backdrop" id="navMenuBackdrop"></div>
+    <div class="nav-menu">
+      ${TABS.map(t=>`<button data-tab="${t.id}" class="nav-menu-item ${state.tab===t.id?'active':''}">${t.label}</button>`).join('')}
+      <div class="nav-menu-divider"></div>
+      <button id="navCustomizeBtn" class="nav-menu-item ${state.tab==='customize'?'active':''}">🎛️ Practice Customize</button>
+      <button id="navMasterBtn" class="nav-menu-item">🎯 Master Practice</button>
+      <button id="navResetBtn" class="nav-menu-item nav-menu-danger">🗑️ Data Reset</button>
+      ${state.security.password ? `<button id="navChangePassBtn" class="nav-menu-item">🔑 Password Badlein</button>` : ''}
+    </div>` : ''}
+  `;
+
+  document.getElementById('kebabBtn').onclick = ()=>{ state.navMenuOpen = !state.navMenuOpen; renderNav(); };
+  const mediumBtn = document.getElementById('mediumToggleBtn');
+  if(mediumBtn) mediumBtn.onclick = ()=>{
+    if('speechSynthesis' in window) window.speechSynthesis.cancel();
+    state.speakingActive = false; state.speakingRow = null;
+    state.speakSettings.medium = state.speakSettings.medium==='en' ? 'hi' : 'en';
+    render();
+  };
+
+  if(menuOpen){
+    const backdrop = document.getElementById('navMenuBackdrop');
+    if(backdrop) backdrop.onclick = ()=>{ state.navMenuOpen = false; renderNav(); };
+    nav.querySelectorAll('.nav-menu-item[data-tab]').forEach(b=>{
+      b.onclick = ()=>{ state.tab = b.dataset.tab; state.navMenuOpen = false; render(); };
+    });
+    const navCustomize = document.getElementById('navCustomizeBtn');
+    if(navCustomize) navCustomize.onclick = ()=>{ state.tab = 'customize'; state.navMenuOpen = false; render(); };
+    const navMaster = document.getElementById('navMasterBtn');
+    if(navMaster) navMaster.onclick = ()=>{
+      state.navMenuOpen = false;
+      if(getWeakList().length===0){
+        renderNav();
+        alert('Abhi koi kamzor combination record me nahi hai — pehle kuch practice karein.');
+        return;
+      }
+      state.courseLevel = null; state.activeLevelRun = null;
+      startPractice(true);
+    };
+    const navReset = document.getElementById('navResetBtn');
+    if(navReset) navReset.onclick = ()=>{ state.navMenuOpen = false; openResetPasswordFlow(); };
+    const navChangePass = document.getElementById('navChangePassBtn');
+    if(navChangePass) navChangePass.onclick = ()=>{ state.navMenuOpen = false; openChangePasswordFlow(); };
+  }
+}
+
+function viewSetup(){
+  const s = state.settings;
+  const opts = Object.keys(OP_LABEL).map(k=>`<option value="${k}" ${s.op===k?'selected':''}>${OP_LABEL[k]}</option>`).join('');
+  const digitOptsA = [1,2,3,4].map(n=>`<option value="${n}" ${s.digitA===n?'selected':''}>${n} digit</option>`).join('');
+  const digitOptsB = [1,2,3,4].map(n=>`<option value="${n}" ${s.digitB===n?'selected':''}>${n} digit</option>`).join('');
+  const percentTierOpts = [1,2,3].map(n=>`<option value="${n}" ${s.digitA===n?'selected':''}>${n===1?'Aasan (10%,20%,25%,50%)':n===2?'Medium (5%,15%,35%...)':'Mushkil (12%,18%,24%...)'}</option>`).join('');
+
+  let extra = '';
+  if(s.op==='add'){
+    if(s.rowCount === 2){
+      const carryChk = (s.digitA===1 && s.digitB===1) ? `
+        <label class="check-row"><input type="checkbox" id="carryOnly" ${s.carryOnly?'checked':''}> ✅ Sirf 2-digit jawaab (jaise 9+1=10, 7+6=13, 6+5=11 — 3+4, 8+1 jaise nahi)</label>
+      ` : '';
+      extra = `
+        <label>Ek row me kitne numbers jodne hain</label>
+        <input type="number" id="rowCount" min="2" max="8" value="${s.rowCount}">
+        <div class="row">
+          <div><label>Pehle number ka digit length</label><select id="digitA">${digitOptsA}</select></div>
+          <div><label>Dusre number ka digit length</label><select id="digitB">${digitOptsB}</select></div>
+        </div>
+        <p class="hint">Jaise: pehla 2-digit, dusra 1-digit — 47 + 8 jaisa sawaal banega.</p>
+        ${carryChk}
+      `;
+    } else {
+      extra = `
+        <label>Ek row me kitne numbers jodne hain</label>
+        <input type="number" id="rowCount" min="2" max="8" value="${s.rowCount}">
+        <label>Har number ka digit length</label>
+        <select id="digitA">${digitOptsA}</select>
+        <p class="hint">2 se zyada numbers me sabka digit length same rakha jata hai. Mixed digit chahiye to row 2 rakhein.</p>
+        <label class="check-row"><input type="checkbox" id="blinkMode" ${s.blinkMode?'checked':''}> ⚡ फ्लैश कार्ड्स / ब्लिंकिंग मोड — numbers ek saath dikhne ke bajaye, har number 1 second ke liye flash hoga aur gayab ho jayega (memory hold karne ki practice)</label>
+      `;
+    }
+  } else if(s.op==='lcm'){
+    extra = `
+      <div class="row">
+        <div><label>Pehle number ka digit length</label><select id="digitA">${digitOptsA}</select></div>
+        <div><label>Dusre number ka digit length</label><select id="digitB">${digitOptsB}</select></div>
+      </div>
+    `;
+  } else if(s.op==='square'){
+    extra = `
+      <label>Number ka digit length</label>
+      <select id="digitA">${digitOptsA}</select>
+      <p class="hint">Jaise 2-digit chuno to sawaal 23², 47² jaise honge.</p>
+    `;
+  } else if(s.op==='percent'){
+    extra = `
+      <label>Percentage difficulty</label>
+      <select id="digitA">${percentTierOpts}</select>
+      <label>Base number ka digit length</label>
+      <select id="digitB">${digitOptsB}</select>
+      <p class="hint">Jaise: "20% of 150" — jawaab hamesha poora number hota hai.</p>
+    `;
+  } else {
+    const labelA = s.op==='div' ? 'Quotient (jawaab) ka digit length' : 'Pehle number ka digit length';
+    const labelB = s.op==='div' ? 'Divisor ka digit length' : 'Dusre number ka digit length';
+    extra = `
+      <div class="row">
+        <div><label>${labelA}</label><select id="digitA">${digitOptsA}</select></div>
+        <div><label>${labelB}</label><select id="digitB">${digitOptsB}</select></div>
+      </div>
+    `;
+  }
+
+  return `
+  <div class="card">
+    <h2>Practice Setup</h2>
+    <label>Calculation type</label>
+    <select id="opSelect">${opts}</select>
+    ${extra}
+    <label>Kitne sawaal practice karne hain</label>
+    <input type="number" id="qCount" min="3" max="200" value="${s.qCount}">
+    <button class="btn" id="startBtn">Practice Shuru Karein</button>
+  </div>
+  <div class="card">
+    <h2>ℹ️ Aur Options</h2>
+    <p class="hint">Master Practice, Practice Customize aur Data Reset ab top-right ke ⋮ menu me milenge. Data Reset ab password se protected hai.</p>
+  </div>
+  `;
+}
+
+function viewCustomize(){
+  const pc = state.practiceCustomize;
+  const ss = state.speakSettings;
+  const voices = getAvailableVoices();
+  const relevantVoices = voices.filter(v => v.lang && v.lang.toLowerCase().startsWith(ss.medium==='en'?'en':'hi'));
+  const voiceList = relevantVoices.length ? relevantVoices : voices; // agar iss medium ki voice na mile to saari dikhado
+  const voiceOptsHtml = voiceList.map(v =>
+    `<option value="${v.voiceURI}" ${ss.voiceURI===v.voiceURI?'selected':''}>${v.name} (${v.lang})</option>`
+  ).join('');
+
+  return `
+  <div class="card">
+    <h2>🔊 Speak Tables — Awaaz Customize Karein</h2>
+    <p class="hint">Kisi bhi table ko bolke sunne ke liye 📖 Learn ya 📋 Tables tab me "Table Bolein" button dabayein. Yahan bhasha, awaaz aur speed set karein.</p>
+    <label>Bolne ki bhasha (Medium)</label>
+    <div class="chip-row">
+      <button class="chip-btn ${ss.medium==='hi'?'active':''}" data-speakmed="hi">🇮🇳 Hindi (pahada style — jaise "gyarah ekam gyarah")</button>
+      <button class="chip-btn ${ss.medium==='en'?'active':''}" data-speakmed="en">🇬🇧 English (jaise "eleven ones are eleven")</button>
+    </div>
+    <p class="hint">Yahi medium top-right corner ke ${ss.medium==='en'?'🇬🇧 EN':'🇮🇳 हिं'} button se bhi turant badla ja sakta hai.</p>
+    <label>Jaldi chunein — Indian voice (device par jo best mile wahi)</label>
+    <div class="chip-row">
+      <button class="chip-btn" id="pickIndianFemaleBtn">👩🏽 Indian Female</button>
+      <button class="chip-btn" id="pickIndianMaleBtn">🧑🏽 Indian Male</button>
+    </div>
+    <p class="hint">Yeh naye voice nahi banate — aapke device par jo Hindi/English (India) voices pehle se installed hain, unme se sabse behtar match select karte hain.</p>
+    <button class="btn secondary" id="openTtsInstallBtn" style="margin-top:4px;">📥 Awaaz Install Screen Kholein</button>
+    <p class="hint">Agar upar wala button seedha na khule (kai devices/apps me yeh Android permission se block ho sakta hai), to manually jayein: <b>Settings → General Management/Accessibility → Text-to-speech output → engine (Google) ke ⚙️ icon → Install voice data → Hindi (India) ya English (India)</b> download karein. Install hote hi voice yahan apne aap dikhne lagegi.</p>
+    <label>Ya list se khud Awaaz (Voice) chunein</label>
+    <select id="speakVoiceSelect">
+      <option value="">Default (device apne aap chunega)</option>
+      ${voiceOptsHtml}
+    </select>
+    ${voices.length===0 ? `<p class="hint">Voices load ho rahi hain… agar list khaali dikhe to yeh screen ek baar wapas kholein.</p>` : ''}
+    <label>Bolne ki speed: ${Number(ss.rate).toFixed(2)}x</label>
+    <input type="range" id="speakRateRange" min="0.5" max="1.5" step="0.05" value="${ss.rate}" style="width:100%;">
+    <button class="btn secondary" id="testSpeakBtn" style="margin-top:10px;">🔊 Test Awaaz Sunein</button>
+  </div>
+  <div class="card">
+    <h2>🎛️ Practice Customize Karein</h2>
+    <label>Jawaab kaise type karna hai</label>
+    <select id="inputModeSelect">
+      <option value="native" ${pc.inputMode==='native'?'selected':''}>📱 Apna Keyboard (device ka keyboard)</option>
+      <option value="keypad" ${pc.inputMode==='keypad'?'selected':''}>🔢 On-Screen Number Keypad (app ka apna keypad)</option>
+    </select>
+    <p class="hint">On-Screen Keypad chunne par mobile ka regular keyboard nahi khulega — sirf app ke apne bade buttons se type karein.</p>
+    <label class="check-row"><input type="checkbox" id="cShowCountdown" ${pc.showCountdown?'checked':''}> ⏱️ 3-2-1 Countdown dikhayein (Blinking Mode me yeh hamesha off rehta hai)</label>
+    <label>Countdown ka style</label>
+    <select id="countdownStyleSelect">
+      <option value="numeric" ${pc.countdownStyle==='readysteadygo'?'':'selected'}>🔢 Numbers (3-2-1)</option>
+      <option value="readysteadygo" ${pc.countdownStyle==='readysteadygo'?'selected':''}>🗣️ Ready-Steady-Go (Hindi: तैयार → सावधान → शुरू!)</option>
+    </select>
+    <p class="hint">Yeh style tab dikhega jab "3-2-1 Countdown" upar se ON ho.</p>
+    <label class="check-row"><input type="checkbox" id="cShowProgress" ${pc.showProgress?'checked':''}> 🔢 Sawaal ka progress (jaise 1/10) dikhayein</label>
+    <label class="check-row"><input type="checkbox" id="cShowStopwatch" ${pc.showStopwatch?'checked':''}> ⏲️ Stopwatch dikhayein</label>
+    <label class="check-row"><input type="checkbox" id="cShowLiveAcc" ${pc.showLiveAccuracy?'checked':''}> 🎯 Live Accuracy meter dikhayein</label>
+    <label class="check-row"><input type="checkbox" id="cShowStreak" ${pc.showStreak?'checked':''}> 🔥 Speed Streak dikhayein</label>
+    <p class="hint">Yeh saari settings Course, Beginner→Advanced, Tables aur Free Practice — sab jagah apply hoti hain.</p>
+  </div>
+  <button class="btn secondary" id="homeBtn3">🏠 Home — Setup Par Wapas Jayein</button>
+  `;
+}
+
+function viewCourse(){
+  const totalDone = Object.keys(state.course.completed).length;
+  const pct = Math.round((totalDone/COURSE_LEVELS.length)*100);
+
+  const cards = COURSE_LEVELS.map(lvl=>{
+    const done = state.course.completed[lvl.id];
+    const locked = lvl.id > state.course.unlocked && !done;
+    const status = done ? `✅ Poora — avg ${done.avgTime.toFixed(1)}s · ${done.accuracy.toFixed(0)}%`
+                 : locked ? '🔒 Pichla level poora karo'
+                 : '▶️ Ready';
+    const target = lvl.master
+      ? 'Target: apni kamzor combinations par 80%+ accuracy'
+      : `Target: avg ≤ ${lvl.maxAvgTime}s · accuracy ≥ ${lvl.minAccuracy}%`;
+    return `
+    <div class="rank-op-card">
+      <div class="rank-op-head">
+        <span class="rank-op-name">Level ${lvl.id} · ${lvl.title}</span>
+        <span>${status}</span>
+      </div>
+      <p class="hint">${lvl.note}</p>
+      <p class="hint">${target}</p>
+      <button class="btn ${locked?'secondary':''}" data-level="${lvl.id}" ${locked?'disabled':''}>${done ? 'Phir Se Karein' : 'Level Shuru Karein'}</button>
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="card">
+    <h2>Speed Course — Step by Step</h2>
+    <p class="hint">Har level ek naya kaushal jodta hai. Agla level tabhi khulta hai jab pichle level ka speed aur accuracy target poora ho.</p>
+    <div class="rank-bar-wrap"><div class="rank-bar" style="width:${pct}%"></div></div>
+    <p class="hint">${totalDone}/${COURSE_LEVELS.length} level poora — ${pct}%</p>
+  </div>
+  <div class="card">${cards}</div>
+  `;
+}
+
+function viewLevels(){
+  const ops = ['add','sub','mul','div'];
+  const activeOp = ops.includes(state.levelsOp) ? state.levelsOp : 'add';
+  state.levelsOp = activeOp;
+
+  const opBtns = ops.map(o=>{
+    const prog = state.levelProgress[o];
+    const done = Object.keys(prog.completed).length;
+    const total = LEVEL_TRACKS[o].length;
+    return `<button data-levelsop="${o}" class="chip-btn ${activeOp===o?'active':''}">${OP_LABEL[o].split(' ')[0]} (${done}/${total})</button>`;
+  }).join('');
+
+  const track = LEVEL_TRACKS[activeOp];
+  const prog = state.levelProgress[activeOp];
+  const doneCt = Object.keys(prog.completed).length;
+  const pct = Math.round((doneCt/track.length)*100);
+
+  const cards = track.map(lvl=>{
+    const done = prog.completed[lvl.id];
+    const locked = lvl.id > prog.unlocked && !done;
+    const status = done ? `✅ Poora — avg ${done.avgTime.toFixed(2)}s · ${done.accuracy.toFixed(0)}%`
+                 : locked ? '🔒 Pichla stage poora karo'
+                 : '▶️ Ready';
+    const target = `Target: avg ≤ ${lvl.maxAvgTime}s · accuracy ≥ ${lvl.minAccuracy}%`;
+    return `
+    <div class="rank-op-card">
+      <div class="rank-op-head">
+        <span class="rank-op-name">${STAGE_EMOJI[lvl.stage]} ${lvl.stage} · ${lvl.title}</span>
+        <span>${status}</span>
+      </div>
+      <p class="hint">${lvl.note}</p>
+      <p class="hint">${target}</p>
+      <button class="btn ${locked?'secondary':''}" data-levelsop="${activeOp}" data-levelid="${lvl.id}" ${locked?'disabled':''}>${done ? 'Phir Se Karein' : 'Stage Shuru Karein'}</button>
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="card">
+    <h2>Beginner → Advanced</h2>
+    <p class="hint">Har operation ka apna alag Beginner → Intermediate → Advanced track hai. Jod ka Beginner stage 1 se 10 tak ke poore range se sawaal deta hai (jaise 8+7, 5+6, 4+8) taaki sirf doubles na aayein.</p>
+    <div class="chip-row">${opBtns}</div>
+    <div class="rank-bar-wrap"><div class="rank-bar" style="width:${pct}%"></div></div>
+    <p class="hint">${OP_LABEL[activeOp]} — ${doneCt}/${track.length} stage poora — ${pct}%</p>
+  </div>
+  <div class="card">${cards}</div>
+  `;
+}
+
+function viewTables(){
+  const ts = state.tablesSettings;
+  const tableOpts = Array.from({length:100},(_,i)=>i+1).map(n=>{
+    const star = (n===11||n===12) ? ' ⭐' : '';
+    return `<option value="${n}" ${ts.tableNum===n?'selected':''}>${n} ka table${star}</option>`;
+  }).join('');
+  const RANGE_OPTS = [12,20,50,100];
+  const cubeRangeOpts = RANGE_OPTS.map(r=>`<option value="${r}" ${ts.cubeRange===r?'selected':''}>1 se ${r} tak (${r} sawaal)</option>`).join('');
+  const squareRangeOpts = RANGE_OPTS.map(r=>`<option value="${r}" ${ts.squareRange===r?'selected':''}>1 se ${r} tak (${r} sawaal)</option>`).join('');
+
+  return `
+  <div class="card">
+    <h2>📋 Tables Yaad Karo (1 se 100 tak)</h2>
+    <p class="hint">Kisi bhi table (1 se 100 tak) ki speed practice karo — 11 aur 12 ka table bade calculation me sabse zyada kaam aata hai.</p>
+    <label>Kaunsa table practice karna hai</label>
+    <select id="tableNumSelect">${tableOpts}</select>
+    <label>Practice mode</label>
+    <div class="chip-row">
+      <button class="chip-btn ${ts.mode==='normal'?'active':''}" data-tmode="normal">🔢 Normal (1× → 12× order)</button>
+      <button class="chip-btn ${ts.mode==='mix'?'active':''}" data-tmode="mix">🔀 Mix (shuffled)</button>
+    </div>
+    <p class="hint">Normal mode table yaad karne ke liye hai — 1× se 12× tak sidhe order me. Mix mode speed test ke liye hai — random order me poochta hai taaki cramming na chale aur max calculation speed mile.</p>
+    <button class="btn" id="startTableBtn">${ts.tableNum} Ka Table Shuru Karein</button>
+    ${state.speakingActive
+      ? `<button class="btn secondary" id="stopSpeakBtn" style="margin-top:8px;">⏹ Rokein</button>`
+      : `<button class="btn teal" id="speakTableBtn" style="margin-top:8px;">🔊 ${ts.tableNum} Ka Table Bolein (${state.speakSettings.medium==='en'?'English':'Hindi'})</button>`}
+  </div>
+  <div class="card">
+    <h2>◻️ Squares (1² se 100² tak)</h2>
+    <p class="hint">1² se 100² tak squares turant yaad karne aur bolne ki speed practice.</p>
+    <label>Kitne tak practice karni hai</label>
+    <select id="squareRangeSelect">${squareRangeOpts}</select>
+    <label>Practice mode</label>
+    <div class="chip-row">
+      <button class="chip-btn ${ts.squareMode==='normal'?'active':''}" data-sqmode="normal">🔢 Normal (order)</button>
+      <button class="chip-btn ${ts.squareMode==='mix'?'active':''}" data-sqmode="mix">🔀 Mix (shuffled)</button>
+    </div>
+    <button class="btn teal" id="startSquareBtn">Squares Shuru Karein</button>
+  </div>
+  <div class="card">
+    <h2>∛ Cube Roots (1³ se 100³ tak)</h2>
+    <p class="hint">Perfect cubes ke cube root turant bolne ki practice — jaise ∛125 = 5.</p>
+    <label>Kitne tak practice karni hai</label>
+    <select id="cubeRangeSelect">${cubeRangeOpts}</select>
+    <label>Practice mode</label>
+    <div class="chip-row">
+      <button class="chip-btn ${ts.cubeMode==='normal'?'active':''}" data-cmode="normal">🔢 Normal (order)</button>
+      <button class="chip-btn ${ts.cubeMode==='mix'?'active':''}" data-cmode="mix">🔀 Mix (shuffled)</button>
+    </div>
+    <button class="btn teal" id="startCubeBtn">Cube Roots Shuru Karein</button>
+  </div>
+  <div class="card">
+    <h3>💡 Max Speed Ke Liye Tricks</h3>
+    <ul class="tip-list">
+      <li>11 ka table: 2-digit number ×11 me digits ke beech unka jod likh do (23×11 = 253)</li>
+      <li>12 ka table: n×12 = n×10 + n×2 — dono asaan parts jod do (17×12 = 170+34 = 204)</li>
+      <li>Cube yaad rakhne ke liye unit digit ka pattern dekho: 1³=1, 2³=8, 3³=27 ... 9³=729 — har cube ka last digit alag hota hai, wahi se cube root turant pehchano</li>
+      <li>Pehle Normal mode me poora set 2-3 baar ratto, phir Mix mode me apni speed test karo</li>
+    </ul>
+  </div>
+  `;
+}
+
+function viewLearn(){
+  const ls = state.learnSettings;
+  const RANGE_OPTS_LEARN = [10,20,50,100];
+
+  const tableOpts = Array.from({length:100},(_,i)=>i+1).map(n=>
+    `<option value="${n}" ${ls.tableNum===n?'selected':''}>${n} ka Pahada</option>`
+  ).join('');
+  const pahadaRows = Array.from({length:12},(_,i)=>i+1).map(i=>
+    `<div class="learn-row ${state.speakingActive && state.speakingRow===i ? 'speaking-row' : ''}"><span class="num">${ls.tableNum} × ${i}</span><span class="num">= ${ls.tableNum*i}</span></div>`
+  ).join('');
+  const mediumLabel = state.speakSettings.medium==='en' ? 'English' : 'Hindi';
+
+  const squareGrid = Array.from({length:100},(_,i)=>i+1).map(n=>
+    `<div class="learn-cell"><span class="learn-cell-top num">${n}²</span><span class="learn-cell-bot num">${n*n}</span></div>`
+  ).join('');
+  const cubeGrid = Array.from({length:100},(_,i)=>i+1).map(n=>
+    `<div class="learn-cell"><span class="learn-cell-top num">${n}³</span><span class="learn-cell-bot num">${n*n*n}</span></div>`
+  ).join('');
+
+  const powerOpts = [4,5,6,7,8,9,10].map(p=>
+    `<option value="${p}" ${ls.powerExp===p?'selected':''}>Power ${p} (n^${p})</option>`
+  ).join('');
+  const powerRangeOpts = RANGE_OPTS_LEARN.map(r=>
+    `<option value="${r}" ${ls.powerRange===r?'selected':''}>1 se ${r} tak</option>`
+  ).join('');
+  // BigInt keeps these exact even for large values like 100^10 (21 digits), which a plain Number would round.
+  const powerGrid = Array.from({length:ls.powerRange},(_,i)=>i+1).map(n=>{
+    const val = (BigInt(n) ** BigInt(ls.powerExp)).toString();
+    return `<div class="learn-cell"><span class="learn-cell-top num">${n}^${ls.powerExp}</span><span class="learn-cell-bot num">${val}</span></div>`;
+  }).join('');
+
+  return `
+  <div class="card">
+    <h2>📖 Pura Pahada Seekho (1 se 100 tak)</h2>
+    <p class="hint">Kisi bhi number 1 se 100 tak ka pura pahada padho — 1× se 12× tak, ratta lagane ke liye.</p>
+    <label>Kaunsa pahada dekhna hai</label>
+    <select id="learnTableSelect">${tableOpts}</select>
+    <div class="learn-list">${pahadaRows}</div>
+    <div class="row" style="margin-top:12px;align-items:center;gap:10px;">
+      ${state.speakingActive
+        ? `<button class="btn secondary" id="stopSpeakBtn">⏹ Rokein</button>`
+        : `<button class="btn teal" id="speakTableBtn">🔊 ${ls.tableNum} Ka Table Bolein (${mediumLabel})</button>`}
+    </div>
+    <p class="hint">Bhasha (Hindi/English) top-right ke ${state.speakSettings.medium==='en'?'🇬🇧 EN':'🇮🇳 हिं'} button se badlein. Awaaz (voice) aur speed 🎛️ Practice Customize me set karein.</p>
+  </div>
+  <div class="card">
+    <h2>◻️ Squares Reference (1² se 100² tak)</h2>
+    <p class="hint">Saare squares ek saath list me — scroll karke padho aur yaad karo.</p>
+    <div class="learn-grid">${squareGrid}</div>
+  </div>
+  <div class="card">
+    <h2>⬛ Cubes Reference (1³ se 100³ tak)</h2>
+    <p class="hint">Saare cubes ek saath list me — scroll karke padho aur yaad karo.</p>
+    <div class="learn-grid">${cubeGrid}</div>
+  </div>
+  <div class="card">
+    <h2>🔺 Higher Powers (4th se 10th Power Tak)</h2>
+    <p class="hint">n⁴ se n¹⁰ tak — bade powers ki exact values seekho (bade number bhi poori tarah dikhte hain).</p>
+    <div class="row">
+      <div><label>Power chuno</label><select id="powerExpSelect">${powerOpts}</select></div>
+      <div><label>Range chuno</label><select id="powerRangeSelect">${powerRangeOpts}</select></div>
+    </div>
+    <div class="learn-grid">${powerGrid}</div>
+  </div>
+  `;
+}
+
+function startGkQuiz(subject, topicIdx){
+  const bank = GK_QUIZ[subject] && GK_QUIZ[subject][topicIdx];
+  if(!bank) return;
+  const questions = shuffleArr(bank.questions.map(q=>({
+    ...q,
+    // shuffle the option order per question, tracking the new correct index
+    _order: shuffleArr(q.options.map((_,i)=>i)),
+  })));
+  state.gkQuiz = { subject, topicIdx, topic:bank.topic, questions, index:0, correctCt:0, wrongCt:0, answered:null };
+  render();
+}
+function answerGkQuiz(selectedOrigIdx){
+  const quiz = state.gkQuiz;
+  if(!quiz || quiz.answered!=null) return;
+  const q = quiz.questions[quiz.index];
+  const correct = selectedOrigIdx === q.answer;
+  quiz.answered = selectedOrigIdx;
+  if(correct) quiz.correctCt++; else quiz.wrongCt++; // accuracy meter: up on sahi, down on galat
+  render();
+}
+function nextGkQuizQuestion(){
+  const quiz = state.gkQuiz;
+  if(!quiz) return;
+  quiz.index++;
+  quiz.answered = null;
+  render();
+}
+function quitGkQuiz(){
+  state.gkQuiz = null;
+  render();
+}
+
+function viewGkQuizSession(){
+  const quiz = state.gkQuiz;
+  const total = quiz.questions.length;
+  if(quiz.index >= total){
+    const acc = total>0 ? Math.round((quiz.correctCt/total)*100) : 0;
+    const msg = acc>=90 ? 'Zabardast! 🏆' : acc>=70 ? 'Badhiya kaam! 👍' : 'Aur practice karo — ho jayega! 💪';
+    return `
+    <div class="card practice-box">
+      <h2>Quiz Poora — ${quiz.subject ? GK_DATA[quiz.subject].label : ''} · ${quiz.topic}</h2>
+      <div class="stats-grid">
+        <div class="stat"><div class="stat-num">${quiz.correctCt}/${total}</div><div class="stat-label">Sahi</div></div>
+        <div class="stat"><div class="stat-num">${acc}%</div><div class="stat-label">Accuracy</div></div>
+      </div>
+      <p class="hint">${msg}</p>
+      <button class="btn teal" id="retryGkQuizBtn">🔁 Yeh Quiz Phir Se Karein</button>
+      <button class="btn secondary" id="quitGkQuizBtn">📚 Topics Par Wapas Jayein</button>
+    </div>`;
+  }
+  const q = quiz.questions[quiz.index];
+  const liveTotal = quiz.correctCt + quiz.wrongCt;
+  const liveAcc = liveTotal>0 ? Math.round((quiz.correctCt/liveTotal)*100) : 100;
+  const liveAccColor = liveAcc>=90 ? 'var(--green)' : liveAcc>=70 ? 'var(--amber)' : 'var(--red)';
+  const liveAccHtml = liveTotal>0 ? `<div class="timer" style="color:${liveAccColor};">🎯 Live Accuracy: ${liveAcc}% (${quiz.correctCt} sahi / ${quiz.wrongCt} galat)</div>` : '';
+  const optsHtml = q._order.map(origIdx=>{
+    let cls = 'quiz-opt';
+    if(quiz.answered!=null){
+      if(origIdx===q.answer) cls += ' correct';
+      else if(origIdx===quiz.answered) cls += ' wrong';
+    }
+    return `<button class="${cls}" data-gkopt="${origIdx}" ${quiz.answered!=null?'disabled':''}>${q.options[origIdx]}</button>`;
+  }).join('');
+  return `
+  <div class="card practice-box">
+    <div class="progress">Sawaal ${quiz.index+1} / ${total} · ${quiz.topic}</div>
+    <div class="qtext" style="font-size:1.1rem;">${q.q}</div>
+    <div class="quiz-opts">${optsHtml}</div>
+    ${liveAccHtml}
+    ${quiz.answered!=null ? `<button class="btn teal" id="nextGkQuizBtn">${quiz.index+1>=total ? 'Result Dekhein →' : 'Agla Sawaal →'}</button>` : ''}
+    <button class="btn secondary" id="quitGkQuizBtn">✋ Quiz Band Karein</button>
+  </div>`;
+}
+
+function viewGK(){
+  const subjectKeys = Object.keys(GK_DATA);
+  const subj = GK_DATA[state.gkSettings.subject] ? state.gkSettings.subject : subjectKeys[0];
+  if(state.gkQuiz){
+    return viewGkQuizSession();
+  }
+  const chips = subjectKeys.map(k=>
+    `<button data-gksubject="${k}" class="chip-btn ${subj===k?'active':''}">${GK_DATA[k].label}</button>`
+  ).join('');
+  const data = GK_DATA[subj];
+  const mode = state.gkSettings.mode || 'read';
+  const modeChips = `
+    <div class="chip-row">
+      <button data-gkmode="read" class="chip-btn ${mode==='read'?'active':''}">📖 Padhai</button>
+      <button data-gkmode="quiz" class="chip-btn ${mode==='quiz'?'active':''}">📝 Quiz — Topic Wise</button>
+    </div>`;
+
+  if(mode==='quiz'){
+    const quizBank = GK_QUIZ[subj] || [];
+    const topicCards = quizBank.map((t,i)=>`
+      <div class="tip-group">
+        <h3>${t.topic} <span class="hint">(${t.questions.length} sawaal)</span></h3>
+        <button class="btn teal" data-gkquiz-subject="${subj}" data-gkquiz-topic="${i}">🚀 Quiz Shuru Karein</button>
+      </div>`).join('');
+    return `
+    <div class="card">
+      <h2>📚 Static GK — SSC CGL</h2>
+      <p class="hint">Subject chuno — har subject topic-wise quiz ke saath hai, apni knowledge test karne ke liye.</p>
+      <div class="chip-row">${chips}</div>
+      ${modeChips}
+    </div>
+    <div class="card">
+      <h2>${data.label} — Topic-wise Quiz</h2>
+      ${topicCards || '<p class="empty-msg">Is subject ke liye abhi quiz available nahi hai.</p>'}
+    </div>`;
+  }
+
+  const topicsHtml = data.topics.map(t=>`
+    <div class="tip-group">
+      <h3>${t.title}</h3>
+      <ul class="tip-list">${t.facts.map(f=>`<li>${f}</li>`).join('')}</ul>
+    </div>`).join('');
+
+  return `
+  <div class="card">
+    <h2>📚 Static GK — SSC CGL</h2>
+    <p class="hint">Subject chuno — har subject topic-wise, important static facts ke saath hai. CGL Tier-1/Tier-2 revision ke liye.</p>
+    <div class="chip-row">${chips}</div>
+    ${modeChips}
+  </div>
+  <div class="card">
+    <h2>${data.label}</h2>
+    ${topicsHtml}
+  </div>
+  `;
+}
+
+function viewPractice(){
+  const sess = state.session;
+  if(!sess){
+    return `<div class="card"><p class="empty-msg">Koi practice session chal nahi raha. Setup tab se shuru karein.</p></div>`;
+  }
+  if(sess.countdown && sess.countdown>0){
+    const isWordStyle = state.practiceCustomize.countdownStyle === 'readysteadygo';
+    const display = isWordStyle ? (COUNTDOWN_WORDS_HI[sess.countdown] || sess.countdown) : sess.countdown;
+    return `
+    <div class="card practice-box countdown-box">
+      <div class="progress">${sess.questions.length} sawaal taiyar hain</div>
+      <div class="countdown-num num${isWordStyle?' countdown-word':''}">${display}</div>
+      <p class="hint">Taiyar ho jao...</p>
+      <button class="btn secondary" id="quitPracticeBtn">✋ Practice Band Karein</button>
+    </div>`;
+  }
+  if(sess.blinking){
+    const q = sess.questions[sess.index];
+    const total = q.nums.length;
+    const shown = sess.blinkShow ? q.nums[sess.blinkIndex] : null;
+    return `
+    <div class="card practice-box blink-box">
+      <div class="progress">Sawaal ${sess.index+1} / ${sess.questions.length} ${state.masterMode?'· Master Practice':''}</div>
+      <p class="hint">⚡ Blinking Mode — dhyan se dekhein, numbers yaad rakhein</p>
+      <div class="blink-num num${shown!==null?' show':''}">${shown!==null ? shown : ''}</div>
+      <div class="blink-progress">${Math.min(sess.blinkIndex+1, total)} / ${total} numbers</div>
+      <button class="btn secondary" id="quitPracticeBtn">✋ Practice Band Karein</button>
+    </div>`;
+  }
+  const q = sess.questions[sess.index];
+  const pc = state.practiceCustomize;
+  const streak = sess.streak||0;
+  const streakHtml = (pc.showStreak && streak>=2) ? `<div class="timer">🔥 Speed Streak: ${streak}${sess.bestStreak>streak?` · best ${sess.bestStreak}`:''}</div>` : '';
+  const liveC = sess.liveCorrect||0, liveW = sess.liveWrong||0, liveTotal = liveC+liveW;
+  const liveAcc = liveTotal>0 ? (liveC/liveTotal)*100 : 100;
+  const liveAccColor = liveAcc>=90 ? 'var(--green)' : liveAcc>=70 ? 'var(--amber)' : 'var(--red)';
+  const liveAccHtml = pc.showLiveAccuracy ? `<div class="timer" id="liveAccMeter" style="color:${liveAccColor}; ${liveTotal>0?'':'display:none;'}">🎯 Live Accuracy: ${liveAcc.toFixed(0)}% (${liveC} sahi / ${liveW} galat)</div>` : '';
+  const progressHtml = pc.showProgress ? `<div class="progress">Sawaal ${sess.index+1} / ${sess.questions.length} ${state.masterMode?'· Master Practice':''}</div>` : '';
+  const stopwatchHtml = pc.showStopwatch ? `<div class="stopwatch num" id="stopwatch">0.00s</div>` : '';
+  const inputHtml = pc.inputMode==='keypad' ? `
+    <div class="answer-display num${sess.typedValue?'':' placeholder'}" id="answerDisplay">${sess.typedValue ? sess.typedValue+'<span class="answer-cursor">|</span>' : 'Jawaab likhein'}</div>
+    <div class="keypad" id="keypad">
+      <button class="keypad-btn" data-key="1">1</button>
+      <button class="keypad-btn" data-key="2">2</button>
+      <button class="keypad-btn" data-key="3">3</button>
+      <button class="keypad-btn" data-key="4">4</button>
+      <button class="keypad-btn" data-key="5">5</button>
+      <button class="keypad-btn" data-key="6">6</button>
+      <button class="keypad-btn" data-key="7">7</button>
+      <button class="keypad-btn" data-key="8">8</button>
+      <button class="keypad-btn" data-key="9">9</button>
+      <button class="keypad-btn special" data-key="clear" aria-label="Clear">C</button>
+      <button class="keypad-btn" data-key="0">0</button>
+      <button class="keypad-btn special" data-key="back" aria-label="Backspace">⌫</button>
+    </div>
+    <button class="btn teal keypad-enter" id="keypadEnter">→ Jawaab Bhejein</button>
+  ` : `<input type="text" inputmode="numeric" id="answerInput" autocomplete="off" placeholder="Jawaab likhein">`;
+  return `
+  <div class="card practice-box">
+    ${progressHtml}
+    <div class="qtext num">${q.text} = ?</div>
+    ${inputHtml}
+    <div class="feedback" id="feedback"></div>
+    ${stopwatchHtml}
+    ${liveAccHtml}
+    ${streakHtml}
+    <button class="btn secondary" id="quitPracticeBtn">✋ Practice Band Karein</button>
+  </div>`;
+}
+
+function viewResults(){
+  const res = state.lastResults;
+  if(!res || res.length===0){
+    return `<div class="card"><p class="empty-msg">Abhi tak koi result nahi. Ek practice session poora karein.</p></div>`;
+  }
+  const sorted = [...res].sort((a,b)=> b.time - a.time); // slowest first (top), fastest last
+  const maxTime = Math.max(...res.map(r=>r.time));
+  const correctCount = res.filter(r=>r.firstTry).length;
+  const totalTime = res.reduce((s,r)=>s+r.time,0);
+  const avgTime = totalTime/res.length;
+  const ts = statsOf(res.map(r=>r.time));
+  const avgReaction = res.reduce((s,r)=>s+(r.reaction!=null?r.reaction:r.time),0)/res.length;
+
+  const rows = sorted.map(r=>{
+    const pct = Math.max(8, (r.time/maxTime)*100);
+    const color = r.time===maxTime ? 'var(--red)' : (r.time===Math.min(...res.map(x=>x.time)) ? 'var(--green)' : 'var(--amber)');
+    return `
+    <div class="ladder-row">
+      <div class="ladder-q num">${r.text} ${r.firstTry ? '✅' : `❌ (${r.mistakes} galat try)`}</div>
+      <div class="ladder-bar-wrap"><div class="ladder-bar" style="width:${pct}%; background:${color};"></div></div>
+      <div class="ladder-time num">${r.time.toFixed(3)}s</div>
+    </div>`;
+  }).join('');
+
+  const rank = state.history.length ? state.history[state.history.length-1].rank : null;
+
+  let courseBlock = '';
+  const cr = state.lastCourseResult;
+  if(cr && cr.lvl){
+    const nextLvl = levelById(cr.levelId+1);
+    courseBlock = `
+    <div class="card">
+      <h2>${cr.pass ? '🎉 Level Poora!' : '🔁 Target Abhi Nahi Mila'}</h2>
+      <p class="hint">Level ${cr.levelId} · ${cr.lvl.title} — ${cr.lvl.master ? 'Master Practice target' : `target avg ≤ ${cr.lvl.maxAvgTime}s · accuracy ≥ ${cr.lvl.minAccuracy}%`}</p>
+      <p class="hint">Aapka result: avg ${cr.avgTime.toFixed(3)}s · accuracy ${cr.accuracy.toFixed(0)}%</p>
+      ${cr.pass && nextLvl ? `<button class="btn teal" id="nextLevelBtn" data-level="${nextLvl.id}">Agla Level: ${nextLvl.title} →</button>` : ''}
+      ${cr.pass && !nextLvl ? `<p class="hint">Poora course complete ho gaya — badhiya! 🏆</p>` : ''}
+      ${!cr.pass ? `<button class="btn teal" id="retryLevelBtn" data-level="${cr.levelId}">Yeh Level Phir Se Karein</button>` : ''}
+      <button class="btn secondary" id="backCourseBtn">Course Par Wapas Jayein</button>
+    </div>`;
+  }
+
+  let levelBlock = '';
+  const lr = state.lastLevelResult;
+  if(lr && lr.lvl){
+    const nextLvl = lr.track.find(l=>l.id===lr.id+1);
+    levelBlock = `
+    <div class="card">
+      <h2>${lr.pass ? '🎉 Stage Poora!' : '🔁 Target Abhi Nahi Mila'}</h2>
+      <p class="hint">${OP_LABEL[lr.op]} · ${STAGE_EMOJI[lr.lvl.stage]} ${lr.lvl.stage} — ${lr.lvl.title} — target avg ≤ ${lr.lvl.maxAvgTime}s · accuracy ≥ ${lr.lvl.minAccuracy}%</p>
+      <p class="hint">Aapka result: avg ${lr.avgTime.toFixed(3)}s · accuracy ${lr.accuracy.toFixed(0)}%</p>
+      ${lr.pass && nextLvl ? `<button class="btn teal" id="nextLevelTrackBtn" data-op="${lr.op}" data-level="${nextLvl.id}">Agla Stage: ${STAGE_EMOJI[nextLvl.stage]} ${nextLvl.title} →</button>` : ''}
+      ${lr.pass && !nextLvl ? `<p class="hint">${OP_LABEL[lr.op]} ka poora track complete — Advanced tak pahunch gaye! 🏆</p>` : ''}
+      ${!lr.pass ? `<button class="btn teal" id="retryLevelTrackBtn" data-op="${lr.op}" data-level="${lr.id}">Yeh Stage Phir Se Karein</button>` : ''}
+      <button class="btn secondary" id="backLevelsBtn">Beginner→Advanced Par Wapas Jayein</button>
+    </div>`;
+  }
+
+  const lastStreak = state.history.length ? state.history[state.history.length-1].bestStreak : 0;
+  const consistencyLabel = ts.stdDev<0.5 ? 'Bahut Stable 🎯' : ts.stdDev<1.2 ? 'Stable' : 'Utaar-Chadhaav';
+
+  return `
+  ${courseBlock}
+  ${levelBlock}
+  <div class="card">
+    <h2>Result — Sabse dheema upar, sabse tez neeche</h2>
+    <div class="stats-grid">
+      <div class="stat"><div class="stat-num">${correctCount}/${res.length}</div><div class="stat-label">Sahi</div></div>
+      <div class="stat"><div class="stat-num">${avgTime.toFixed(3)}s</div><div class="stat-label">Average time</div></div>
+      <div class="stat"><div class="stat-num">${totalTime.toFixed(3)}s</div><div class="stat-label">Total time</div></div>
+      ${rank ? `<div class="stat"><div class="stat-num">${rank.emoji} ${rank.tier} ${rank.sub}</div><div class="stat-label">Rank · Score ${rank.score}/100</div></div>` : ''}
+      ${lastStreak>=2 ? `<div class="stat"><div class="stat-num">🔥 ${lastStreak}</div><div class="stat-label">Best Speed Streak</div></div>` : ''}
+    </div>
+    <p class="hint">🎯 Accuracy sirf pehle try me sahi jawaab ka % hai — ek baar bhi red (galat) hua to woh sawaal "sahi" nahi ginta, chahe baad me sahi jawaab de diya ho.</p>
+    ${rows}
+    <button class="btn secondary" id="homeBtn">🏠 Home — Naya Setup Karein</button>
+  </div>
+  <div class="card">
+    <h2>⏱️ Timing Analytics</h2>
+    <div class="stats-grid">
+      <div class="stat"><div class="stat-num">${ts.min.toFixed(3)}s</div><div class="stat-label">Fastest</div></div>
+      <div class="stat"><div class="stat-num">${ts.max.toFixed(3)}s</div><div class="stat-label">Slowest</div></div>
+      <div class="stat"><div class="stat-num">${ts.median.toFixed(3)}s</div><div class="stat-label">Median</div></div>
+      <div class="stat"><div class="stat-num">${avgReaction.toFixed(3)}s</div><div class="stat-label">Avg Reaction Time</div></div>
+    </div>
+    <p class="hint">Consistency (std. dev): <b class="num">±${ts.stdDev.toFixed(3)}s</b> — ${consistencyLabel}</p>
+    <p class="hint">Reaction Time = pehli key press tak ka waqt · Solve Time = jawaab jama karne tak ka poora waqt. Reaction time kam karo to overall speed apne aap badhegi.</p>
+  </div>`;
+}
+
+function viewHistory(){
+  if(state.history.length===0){
+    return `<div class="card"><p class="empty-msg">Abhi tak koi practice history nahi hai.</p></div>`;
+  }
+  const rows = [...state.history].reverse().map(h=>{
+    const expanded = state.expandedHistory === h.id;
+    let detailHtml = '';
+    if(expanded && h.details && h.details.length){
+      const sortedD = [...h.details].sort((a,b)=>b.time-a.time);
+      const maxT = Math.max(...h.details.map(d=>d.time));
+      const totalMistakes = h.details.reduce((s,d)=>s+(d.mistakes||0),0);
+      const rowsD = sortedD.map(d=>{
+        const pct = Math.max(8,(d.time/maxT)*100);
+        const color = d.time===maxT ? 'var(--red)' : 'var(--amber)';
+        return `
+        <div class="ladder-row">
+          <div class="ladder-q num">${d.text} ${d.mistakes ? `❌ (${d.mistakes} galat try)` : '✅'}</div>
+          <div class="ladder-bar-wrap"><div class="ladder-bar" style="width:${pct}%; background:${color};"></div></div>
+          <div class="ladder-time num">${d.time.toFixed(3)}s</div>
+        </div>`;
+      }).join('');
+      const tsLine = h.timeStats
+        ? `<p class="hint">Fastest ${h.timeStats.min.toFixed(3)}s · Slowest ${h.timeStats.max.toFixed(3)}s · Median ${h.timeStats.median.toFixed(3)}s · Consistency ±${h.timeStats.stdDev.toFixed(3)}s ${h.avgReaction!=null?`· Avg reaction ${h.avgReaction.toFixed(3)}s`:''}</p>`
+        : '';
+      detailHtml = `
+        <div class="hist-detail">
+          <p class="hint">Kul galat try: ${totalMistakes} · Digit setup: ${h.digitInfo||'—'}</p>
+          ${tsLine}
+          ${rowsD}
+        </div>`;
+    }
+    return `
+    <div class="hist-row">
+      <div class="hist-main">
+        <span class="hist-op">${h.opLabel}${h.master?' · Master':''}</span>
+        <span class="hist-time-tag">${h.time}</span>
+      </div>
+      <div class="hist-stats">
+        <span>${h.correctCt}/${h.total} sahi (${h.accuracy.toFixed(0)}%)</span>
+        <span>avg ${h.avgTime.toFixed(3)}s</span>
+        <span>total ${h.totalTime.toFixed(3)}s</span>
+        <span>${h.rank.emoji} ${h.rank.tier} ${h.rank.sub}</span>
+      </div>
+      <button class="btn secondary hist-toggle" data-id="${h.id}">${expanded ? 'Detail Chhupayein' : 'Detail Dekhein'}</button>
+      ${detailHtml}
+    </div>
+  `;
+  }).join('');
+  return `
+  <div class="card">
+    <h2>Practice History</h2>
+    ${rows}
+    <button class="btn secondary" id="homeBtn2">🏠 Home — Naya Setup Karein</button>
+  </div>`;
+}
+
+function viewRank(){
+  if(state.history.length===0){
+    return `<div class="card"><p class="empty-msg">Rank dekhne ke liye pehle ek practice session poora karein.</p></div>`;
+  }
+  const ops = ['add','sub','mul','div','mix','lcm','square','percent'].filter(op => state.history.some(h=>h.op===op));
+  const scores = state.history.map(h=>h.rank.score);
+  const avgScore = Math.round(scores.reduce((s,x)=>s+x,0)/scores.length);
+  const overall = tierFromScore(avgScore);
+  const overallProgress = overall.next ? Math.round(((avgScore-overall.min)/(overall.max-overall.min))*100) : 100;
+  const scoreStd = Math.sqrt(scores.reduce((s,x)=>s+(x-avgScore)*(x-avgScore),0)/scores.length);
+  const recentScores = scores.slice(-5);
+  const recentAvg = recentScores.reduce((s,x)=>s+x,0)/recentScores.length;
+  const overallTrend = scores.length>=2
+    ? (recentAvg > avgScore+1 ? '📈 Recent sessions overall se behtar' : recentAvg < avgScore-1 ? '📉 Recent sessions overall se kamzor' : '➡️ Stable performance')
+    : '';
+
+  const perOp = ops.map(op=>{
+    const entries = state.history.filter(h=>h.op===op);
+    const latest = entries[entries.length-1];
+    const prev = entries.length>1 ? entries[entries.length-2] : null;
+    const best = state.bestRank[op];
+    const nextText = latest.rank.next ? `agla: ${latest.rank.next.emoji} ${latest.rank.next.tier}` : 'top rank!';
+    const trendArrow = prev
+      ? (latest.rank.score > prev.rank.score ? '↑' : latest.rank.score < prev.rank.score ? '↓' : '→')
+      : '';
+    const trendColor = trendArrow==='↑' ? 'var(--green)' : trendArrow==='↓' ? 'var(--red)' : 'rgba(241,236,221,0.6)';
+    return `
+    <div class="rank-op-card">
+      <div class="rank-op-head">
+        <span class="rank-op-name">${OP_LABEL[op]}</span>
+        <span>${latest.rank.emoji} ${latest.rank.tier} ${latest.rank.sub} ${trendArrow?`<span style="color:${trendColor}">${trendArrow}</span>`:''}</span>
+      </div>
+      <div class="rank-bar-wrap"><div class="rank-bar" style="width:${latest.rank.progressPct}%"></div></div>
+      <div class="hist-stats">
+        <span>Score ${latest.rank.score}/100</span>
+        <span>${nextText}</span>
+        ${best ? `<span>Best: ${best.emoji} ${best.tier} ${best.sub||''}</span>` : ''}
+        <span>Sessions: ${entries.length}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Milestone badges
+  const badges = [];
+  if(scoreStd < 8 && scores.length>=3) badges.push({emoji:'🎯', label:'Consistent Performer', note:`Score variation sirf ±${scoreStd.toFixed(0)}`});
+  const bestStreakEver = state.history.reduce((m,h)=>Math.max(m,h.bestStreak||0),0);
+  if(bestStreakEver>=5) badges.push({emoji:'🔥', label:'Speed Streaker', note:`${bestStreakEver} sawaal lagatar tez solve kiye`});
+  ops.forEach(op=>{
+    if(state.bestRank[op] && state.bestRank[op].score>=93) badges.push({emoji:'👑', label:`${OP_LABEL[op]} Grandmaster`, note:`Best score ${state.bestRank[op].score}/100`});
+  });
+  const totalQ = state.history.reduce((s,h)=>s+h.total,0);
+  if(totalQ>=100) badges.push({emoji:'💯', label:'Century Club', note:`${totalQ} sawaal ab tak solve kiye`});
+  const badgesHtml = badges.length
+    ? `<div class="chip-row">${badges.map(b=>`<span class="combo-chip" style="background:var(--teal);" title="${b.note}">${b.emoji} ${b.label}</span>`).join('')}</div>`
+    : `<p class="hint">Aur practice karo — badges yahan unlock honge.</p>`;
+
+  return `
+  <div class="card">
+    <h2>Overall Rank</h2>
+    <div class="stats-grid">
+      <div class="stat"><div class="stat-num" style="font-size:2rem;">${overall.emoji}</div><div class="stat-label">${overall.tier} ${overall.sub} · Score ${avgScore}/100</div></div>
+      <div class="stat"><div class="stat-num">±${scoreStd.toFixed(0)}</div><div class="stat-label">Consistency</div></div>
+    </div>
+    <div class="rank-bar-wrap"><div class="rank-bar" style="width:${overallProgress}%"></div></div>
+    <p class="hint">${overall.next ? `Agli rank ${overall.next.emoji} ${overall.next.tier} tak ${overall.max - avgScore} score aur chahiye.` : 'Aap sabse top rank par ho!'}</p>
+    ${overallTrend ? `<p class="hint">${overallTrend}</p>` : ''}
+  </div>
+  <div class="card">
+    <h2>Badges</h2>
+    ${badgesHtml}
+  </div>
+  <div class="card">
+    <h2>Operation-wise Rank</h2>
+    ${perOp}
+    <p class="hint">Score speed (limit time ke muqable average time) aur accuracy dono se banta hai — 50% weight har ek ko. Har tier ke andar 1→2→3→4 sub-levels hote hain, jitna high number utna agli tier ke paas (jaise Silver 4 ke baad Gold 1 aata hai).</p>
+  </div>`;
+}
+
+function viewAnalysis(){
+  if(state.history.length===0){
+    return `<div class="card"><p class="empty-msg">Analysis dekhne ke liye pehle kuch practice sessions poore karein.</p></div>`;
+  }
+  const PILLAR_OPS = ['add','sub','mul','div','mix'].filter(op => state.history.some(h=>h.op===op));
+
+  // Per-operation summary: average score/accuracy/time across all sessions of that op.
+  const opStats = PILLAR_OPS.map(op=>{
+    const entries = state.history.filter(h=>h.op===op);
+    const avgScore = entries.reduce((s,e)=>s+e.rank.score,0)/entries.length;
+    const avgAcc = entries.reduce((s,e)=>s+e.accuracy,0)/entries.length;
+    const avgTime = entries.reduce((s,e)=>s+e.avgTime,0)/entries.length;
+    return { op, sessions: entries.length, avgScore, avgAcc, avgTime };
+  }).sort((a,b)=> b.avgScore - a.avgScore);
+
+  const strengths = opStats.slice(0,2);
+  const weaknesses = [...opStats].reverse().slice(0,2);
+
+  const strengthChips = strengths.map(o=>
+    `<span class="combo-chip" style="background:var(--green);">${OP_LABEL[o.op]} · avg score ${o.avgScore.toFixed(0)}/100</span>`
+  ).join('');
+  const weaknessChips = weaknesses.map(o=>
+    `<span class="combo-chip" style="background:var(--red);">${OP_LABEL[o.op]} · avg score ${o.avgScore.toFixed(0)}/100</span>`
+  ).join('');
+
+  // Consistency — how much scores swing session to session.
+  const scores = state.history.map(h=>h.rank.score);
+  const meanScore = scores.reduce((s,x)=>s+x,0)/scores.length;
+  const scoreStd = Math.sqrt(scores.reduce((s,x)=>s+(x-meanScore)*(x-meanScore),0)/scores.length);
+  const consistencyLabel = scoreStd<6 ? 'Bahut Consistent 🎯' : scoreStd<14 ? 'Thodi Ups-Downs' : 'Inconsistent — practice ka pattern set karo';
+
+  // Digit-tier weak spots across the four pillars, using each history entry's digitTier.
+  const tierCounts = {1:0,2:0,3:0};
+  state.history.filter(h=>['add','sub','mul','div','mix'].includes(h.op)).forEach(h=>{
+    if(h.digitTier) tierCounts[h.digitTier] = (tierCounts[h.digitTier]||0) + 1;
+  });
+  const leastPracticedTier = Object.entries(tierCounts).sort((a,b)=>a[1]-b[1])[0];
+
+  const weakList = getWeakList();
+  const weakByTier = {1:0,2:0,3:0};
+  weakList.forEach(w=>{ weakByTier[w.tier] = (weakByTier[w.tier]||0)+1; });
+
+  // Recommendations — plain-language next steps built from the numbers above.
+  const recs = [];
+  if(weaknesses[0]) recs.push(`${OP_LABEL[weaknesses[0].op]} me sabse kam score aa raha hai (${weaknesses[0].avgScore.toFixed(0)}/100) — isi par Master Practice ya Levels track try karein.`);
+  if(weakList.length>0) recs.push(`Abhi ${weakList.length} kamzor combinations record me hain — sabse zyada ${TIER_LABEL[Object.entries(weakByTier).sort((a,b)=>b[1]-a[1])[0][0]]} me hain.`);
+  if(leastPracticedTier && Number(leastPracticedTier[1])===0) recs.push(`${TIER_LABEL[leastPracticedTier[0]]} numbers ki practice abhi tak nahi hui — Setup se ek round try karein.`);
+  if(scoreStd>=14) recs.push('Score session-to-session bahut upar-neeche ho raha hai — roz thoda thoda practice karo, ek hi din bahut zyada mat karo.');
+  if(recs.length===0) recs.push('Sab operations me balanced progress hai — is tarah practice jaari rakho!');
+
+  const opRows = opStats.map(o=>`
+    <div class="hist-row">
+      <div class="hist-main">
+        <span class="hist-op">${OP_LABEL[o.op]}</span>
+        <span class="num">${o.avgScore.toFixed(0)}/100</span>
+      </div>
+      <div class="hist-stats">
+        <span>Sessions: ${o.sessions}</span>
+        <span>Avg accuracy: ${o.avgAcc.toFixed(0)}%</span>
+        <span>Avg time: ${o.avgTime.toFixed(2)}s</span>
+      </div>
+    </div>`).join('');
+
+  return `
+  <div class="card">
+    <h2>🔎 Strengths & Weaknesses</h2>
+    <p class="hint">Best</p>
+    <div class="chip-row">${strengthChips || '<span class="empty-msg">Data kam hai</span>'}</div>
+    <p class="hint" style="margin-top:10px;">Needs Work</p>
+    <div class="chip-row">${weaknessChips || '<span class="empty-msg">Data kam hai</span>'}</div>
+  </div>
+  <div class="card">
+    <h2>Operation-wise Summary</h2>
+    ${opRows}
+  </div>
+  <div class="card">
+    <h2>Consistency</h2>
+    <div class="stats-grid">
+      <div class="stat"><div class="stat-num">±${scoreStd.toFixed(0)}</div><div class="stat-label">Score Variation</div></div>
+      <div class="stat"><div class="stat-num" style="font-size:1.1rem;">${consistencyLabel}</div><div class="stat-label">Overall Pattern</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>💡 Recommendations</h2>
+    <ul class="tip-list">${recs.map(r=>`<li>${r}</li>`).join('')}</ul>
+  </div>`;
+}
+
+function viewProgress(){
+  if(state.history.length===0){
+    return `<div class="card"><p class="empty-msg">Progress dekhne ke liye pehle practice karein.</p></div>`;
+  }
+  const totalSessions = state.history.length;
+  const totalQuestions = state.history.reduce((s,h)=>s+h.total,0);
+  const totalCorrect = state.history.reduce((s,h)=>s+h.correctCt,0);
+  const totalTimeSpent = state.history.reduce((s,h)=>s+h.totalTime,0);
+  const overallAccuracy = (totalCorrect/totalQuestions)*100;
+  const bestStreakEver = state.history.reduce((m,h)=>Math.max(m,h.bestStreak||0),0);
+  const totalMins = totalTimeSpent/60;
+
+  const overviewCard = `
+  <div class="card">
+    <h2>Overview</h2>
+    <div class="stats-grid">
+      <div class="stat"><div class="stat-num">${totalSessions}</div><div class="stat-label">Sessions</div></div>
+      <div class="stat"><div class="stat-num">${totalQuestions}</div><div class="stat-label">Sawaal Solve Kiye</div></div>
+      <div class="stat"><div class="stat-num">${overallAccuracy.toFixed(0)}%</div><div class="stat-label">Overall Accuracy</div></div>
+      <div class="stat"><div class="stat-num">${totalMins.toFixed(1)}m</div><div class="stat-label">Total Practice Time</div></div>
+      ${bestStreakEver>=2 ? `<div class="stat"><div class="stat-num">🔥 ${bestStreakEver}</div><div class="stat-label">Best Streak Ever</div></div>` : ''}
+    </div>
+    <p class="hint">🎯 Accuracy = pehle-try-me-sahi jawaab ÷ total sawaal. Speed kabhi precision ki keemat par nahi ginta — red hote hi woh sawaal accuracy me "galat" ban jaata hai.</p>
+  </div>`;
+
+  const ops = ['add','sub','mul','div','mix','lcm','square','percent','table','sqdrill','cbrt'].filter(op => state.history.some(h=>h.op===op));
+  const FOUR_PILLARS = ['add','sub','mul','div'];
+  const digitFilter = state.progressDigitFilter || 'all';
+  const filterChips = `
+  <div class="card">
+    <h2>📊 Progress Check — Apne Hisab Se</h2>
+    <p class="hint">Digit ya Row chuno, sirf wahi subsection dikhega.</p>
+    <div class="chip-row">
+      <button data-progfilter="all" class="chip-btn ${digitFilter==='all'?'active':''}">Sabhi</button>
+      <button data-progfilter="1" class="chip-btn ${digitFilter==='1'?'active':''}">1-Digit</button>
+      <button data-progfilter="2" class="chip-btn ${digitFilter==='2'?'active':''}">2-Digit</button>
+      <button data-progfilter="3" class="chip-btn ${digitFilter==='3'?'active':''}">3-Digit</button>
+      <button data-progfilter="4" class="chip-btn ${digitFilter==='4'?'active':''}">4-Digit</button>
+      <button data-progfilter="row" class="chip-btn ${digitFilter==='row'?'active':''}">Row</button>
+    </div>
+  </div>`;
+  const blocks = ops.map(op=>{
+    const entries = state.history.filter(h=>h.op===op);
+    const maxTime = Math.max(...entries.map(e=>e.avgTime));
+    const bars = entries.map(e=>{
+      const pct = Math.max(6,(e.avgTime/maxTime)*100);
+      return `<div class="prog-bar-wrap" title="${e.avgTime.toFixed(2)}s · ${e.accuracy.toFixed(0)}% accuracy"><div class="prog-bar" style="height:${pct}%"></div></div>`;
+    }).join('');
+    const accBars = entries.map(e=>{
+      const pct = Math.max(6, e.accuracy);
+      const color = e.accuracy>=90 ? 'var(--green)' : e.accuracy>=70 ? 'var(--amber)' : 'var(--red)';
+      return `<div class="prog-bar-wrap" title="${e.accuracy.toFixed(0)}% accuracy"><div class="prog-bar" style="height:${pct}%; background:${color};"></div></div>`;
+    }).join('');
+    const first = entries[0].avgTime, last = entries[entries.length-1].avgTime;
+    const diffPct = ((first-last)/first*100).toFixed(0);
+    const trendMsg = entries.length>1
+      ? (last<first ? `${diffPct}% tez ho gaye ho pehle session se 🎉` : `Abhi pehle session se ${Math.abs(diffPct)}% dheema ho — practice jaari rakho`)
+      : `Sirf ek session hua hai, aur practice karo trend dekhne ke liye`;
+    const bestTime = Math.min(...entries.map(e=>e.avgTime));
+    const bestAcc = Math.max(...entries.map(e=>e.accuracy));
+    const opQuestions = entries.reduce((s,e)=>s+e.total,0);
+    const opAccuracy = (entries.reduce((s,e)=>s+e.correctCt,0)/opQuestions)*100;
+
+    // Progress Check — subsection under subsection: 1-digit / 2-digit / 3-digit / 4-digit, with the exact
+    // digit-combos practiced inside each tier (e.g. "1×2 digit"), only for the four pillars.
+    // Filterable via state.progressDigitFilter so the user can look at just the tier/row they want.
+    let tierCheckHtml = '';
+    if(FOUR_PILLARS.includes(op)){
+      const tierNums = digitFilter==='all' ? [1,2,3,4] : (digitFilter==='row' ? [] : [Number(digitFilter)]);
+      const tierBlocks = tierNums.map(tier=>{
+        const tEntries = entries.filter(e=>e.digitTier===tier);
+        if(tEntries.length===0) return '';
+        const combos = {};
+        tEntries.forEach(e=>{
+          const k = `${e.digitA||'?'} × ${e.digitB||'?'} digit`;
+          combos[k] = (combos[k]||0) + 1;
+        });
+        const comboChips = Object.entries(combos)
+          .map(([k,c])=>`<span class="combo-chip">${k} · ${c} session${c>1?'s':''} practiced</span>`)
+          .join('');
+        const tQ = tEntries.reduce((s,e)=>s+e.total,0);
+        const tAcc = (tEntries.reduce((s,e)=>s+e.correctCt,0)/tQ)*100;
+        const tAvg = tEntries.reduce((s,e)=>s+e.avgTime,0)/tEntries.length;
+        return `
+        <div class="tier-sub">
+          <h4>${TIER_LABEL[tier]}</h4>
+          <p class="hint">${tEntries.length} session${tEntries.length>1?'s':''} · ${tQ} sawaal · avg <b class="num">${tAvg.toFixed(2)}s</b> · <b class="num">${tAcc.toFixed(0)}%</b> accuracy</p>
+          <div>${comboChips}</div>
+        </div>`;
+      }).join('');
+      const tierEmpty = tierNums.length>0 && tierBlocks.trim()==='' ? `<p class="empty-msg">Is digit-tier ki abhi tak koi practice nahi hai.</p>` : '';
+
+      let rowCheckHtml = '';
+      if(op==='add' && (digitFilter==='all' || digitFilter==='row')){
+        const rowGroups = {};
+        entries.forEach(e=>{
+          const rc = e.rowCount || 2;
+          if(!rowGroups[rc]) rowGroups[rc] = [];
+          rowGroups[rc].push(e);
+        });
+        const rowKeys = Object.keys(rowGroups).map(Number).sort((a,b)=>a-b);
+        if(rowKeys.length>1 || rowKeys[0]>2 || digitFilter==='row'){
+          const rowChips = rowKeys.map(rc=>{
+            const g = rowGroups[rc];
+            return `<span class="combo-chip">${rc} numbers/row · ${g.length} session${g.length>1?'s':''}</span>`;
+          }).join('');
+          rowCheckHtml = `<div class="tier-sub"><h4>Row Practice</h4><div>${rowChips || '<p class="empty-msg">Abhi tak koi row practice nahi hai.</p>'}</div></div>`;
+        } else if(digitFilter==='row'){
+          rowCheckHtml = `<p class="empty-msg">Abhi tak koi row practice nahi hai.</p>`;
+        }
+      }
+
+      tierCheckHtml = `
+      <div class="tier-sub-wrap">
+        <h4 style="margin-bottom:2px;">📊 Progress Check</h4>
+        <p class="hint">Kaunse digit-tier aur combination practice ki hai — subsection wise.</p>
+        ${tierBlocks}${tierEmpty}
+        ${rowCheckHtml}
+      </div>`;
+    }
+
+    return `
+    <div class="tip-group">
+      <h3>${OP_LABEL[op]} <span class="hint">(${entries.length} session${entries.length>1?'s':''} · ${opQuestions} sawaal)</span></h3>
+      <p class="hint">Average time trend (neeche = tez)</p>
+      <div class="prog-chart">${bars}</div>
+      <p class="hint">Accuracy trend (upar = behtar)</p>
+      <div class="prog-chart">${accBars}</div>
+      <div class="hist-stats" style="margin-top:8px;">
+        <span>Best avg: <b class="num">${bestTime.toFixed(2)}s</b></span>
+        <span>Best accuracy: <b class="num">${bestAcc.toFixed(0)}%</b></span>
+        <span>Overall accuracy: <b class="num">${opAccuracy.toFixed(0)}%</b></span>
+      </div>
+      <p class="hint">${trendMsg}</p>
+      ${tierCheckHtml}
+    </div>`;
+  }).join('');
+  return `${overviewCard}${filterChips}<div class="card"><h2>Progress — Per Operation Detail</h2>${blocks}</div>`;
+}
+
+function viewTips(){
+  const TIP_OPS = ['add','sub','mul','div','lcm','square','percent'];
+  const groups = TIP_OPS.map(op=>{
+    const items = state.tips[op].map((t,i)=>`
+      <li><span>${t}</span><button data-op="${op}" data-idx="${i}" class="delTip">Hatao</button></li>
+    `).join('');
+    return `
+    <div class="tip-group">
+      <h3>${OP_LABEL[op]}</h3>
+      <ul class="tip-list">${items || '<li class="empty-msg">Koi formula/tip nahi</li>'}</ul>
+    </div>`;
+  }).join('');
+  const tipOpOptions = TIP_OPS.map(op=>`<option value="${op}">${OP_LABEL[op]}</option>`).join('');
+
+  return `
+  <div class="card">
+    <h2>Formulas & Tips — jitni chahein utni jodein</h2>
+    <p class="hint">Har operation ke liye speed-math formulas aur tricks — apni khud ki bhi jod sakte ho.</p>
+    ${groups}
+    <label>Nayi tip/formula jodein</label>
+    <div class="tip-add">
+      <select id="tipOp">${tipOpOptions}</select>
+      <input type="text" id="tipText" placeholder="Apni tip yahan likhein">
+      <button class="btn secondary" id="addTipBtn">Jodo</button>
+    </div>
+  </div>`;
+}
+
+function viewWeak(){
+  const allWeak = getWeakList();
+  const filter = state.weakFilter;
+  const opsToShow = filter==='all' ? ['add','sub','mul','div'] : [filter];
+
+  const filterBtns = ['all','add','sub','mul','div'].map(f=>{
+    const label = f==='all' ? 'Sab' : OP_LABEL[f].split(' ')[0];
+    return `<button data-filter="${f}" class="chip-btn ${filter===f?'active':''}">${label}</button>`;
+  }).join('');
+
+  const groups = opsToShow.map(op=>{
+    const items = allWeak.filter(w=>w.op===op);
+    if(items.length===0){
+      return filter==='all' ? '' : `<div class="tip-group"><h3>${OP_LABEL[op]}</h3><p class="empty-msg">Is operation me abhi koi kamzor combination nahi hai.</p></div>`;
+    }
+    const tierBlocks = [1,2,3].map(tier=>{
+      const tierItems = items.filter(w=>w.tier===tier);
+      if(tierItems.length===0) return '';
+      const chips = tierItems
+        .sort((a,b)=>b.avg-a.avg)
+        .map(w=>{
+          const text = op==='div' ? `${w.a*w.b}÷${w.a}` : `${w.a}${OP_SYMBOL[op]}${w.b}`;
+          return `<span class="combo-chip">${text} · avg ${w.avg.toFixed(1)}s</span>`;
+        }).join('');
+      return `<div class="tier-sub"><h4>${TIER_LABEL[tier]}</h4><div>${chips}</div></div>`;
+    }).join('');
+    return `<div class="tip-group"><h3>${OP_LABEL[op]} <span class="hint">(${items.length})</span></h3>${tierBlocks}</div>`;
+  }).join('');
+
+  const filteredCount = filter==='all' ? allWeak.length : allWeak.filter(w=>w.op===filter).length;
+
+  return `
+  <div class="card">
+    <h2>Kamzor Combinations</h2>
+    <p class="hint">Jo combination limit time se zyada le, wo yahan record hoti hai — 1, 2 aur 3-digit alag dikhte hain. Lagatar 3 baar tez solve karne par combination apne aap hat jaati hai.</p>
+    <div class="chip-row">${filterBtns}</div>
+    ${filteredCount ? groups : '<p class="empty-msg">Is filter me abhi koi kamzor combination record nahi hai — badhiya!</p>'}
+    <button class="btn teal" id="goMasterBtn" ${allWeak.length===0?'disabled':''}>Master Practice Shuru Karein${filter!=='all' && filteredCount ? ' ('+OP_LABEL[filter]+')' : ''}</button>
+  </div>`;
+}
+
+function viewLeaderboard(){
+  const opsWithRecords = ['add','sub','mul','div'].filter(op => Object.keys(state.records[op]).length>0);
+  if(opsWithRecords.length===0){
+    return `<div class="card"><p class="empty-msg">Abhi tak koi calculation record nahi hai — pehle practice karein, har sawaal yahan record hoga.</p></div>`;
+  }
+  const op = opsWithRecords.includes(state.leaderOpFilter) ? state.leaderOpFilter : opsWithRecords[0];
+  state.leaderOpFilter = op;
+
+  const opBtns = opsWithRecords.map(o=>
+    `<button data-leaderop="${o}" class="chip-btn ${op===o?'active':''}">${OP_LABEL[o].split(' ')[0]}</button>`
+  ).join('');
+  const tierFilter = state.leaderTierFilter;
+  const tierBtns = ['all','1','2','3'].map(t=>{
+    const label = t==='all' ? 'Sab' : `${t}-Digit`;
+    return `<button data-leadertier="${t}" class="chip-btn ${tierFilter===t?'active':''}">${label}</button>`;
+  }).join('');
+
+  const entries = Object.values(state.records[op])
+    .filter(r => tierFilter==='all' || String(r.tier)===tierFilter);
+
+  const tiersToShow = tierFilter==='all' ? [1,2,3] : [Number(tierFilter)];
+  const blocks = tiersToShow.map(tier=>{
+    const items = entries.filter(e=>e.tier===tier).sort((a,b)=>a.best-b.best);
+    if(items.length===0) return '';
+    const rows = items.map((e,i)=>{
+      const text = op==='div' ? `${e.a*e.b} ÷ ${e.a}` : `${e.a} ${OP_SYMBOL[op]} ${e.b}`;
+      const medal = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`;
+      return `
+      <div class="hist-row">
+        <div class="hist-main">
+          <span class="hist-op num">${medal} ${text}</span>
+          <span class="hist-time-tag num">${formatPulse(e.best)}</span>
+        </div>
+        <div class="hist-stats">
+          <span>Best: ${e.best.toFixed(3)}s</span>
+          <span>Attempts: ${e.attempts}</span>
+          <span>Last: ${e.lastTime.toFixed(3)}s</span>
+        </div>
+      </div>`;
+    }).join('');
+    return `<div class="tip-group"><h3>${TIER_LABEL[tier]} <span class="hint">(${items.length} calculations)</span></h3>${rows}</div>`;
+  }).join('');
+
+  return `
+  <div class="card">
+    <h2>📊 Calculation Leaderboard</h2>
+    <p class="hint">Har sawaal jo aapne solve kiya uska sabse tez (best) time yahan record hota hai — 1-digit, 2-digit aur 3-digit alag track hote hain.</p>
+    <div class="chip-row">${opBtns}</div>
+    <div class="chip-row">${tierBtns}</div>
+    ${blocks || '<p class="empty-msg">Is filter me abhi koi record nahi hai.</p>'}
+  </div>`;
+}
+
+/* ================= PASSWORD-PROTECTED DATA RESET ================= */
+function openResetPasswordFlow(){
+  state.passwordModal = state.security.password
+    ? { mode:'verify', purpose:'reset', pass1:'', pass2:'', old:'', error:'' }
+    : { mode:'create', purpose:'reset', pass1:'', pass2:'', old:'', error:'' };
+  render();
+}
+
+function openChangePasswordFlow(){
+  state.passwordModal = state.security.password
+    ? { mode:'change-verify', purpose:'change', pass1:'', pass2:'', old:'', error:'' }
+    : { mode:'create', purpose:'change', pass1:'', pass2:'', old:'', error:'' };
+  render();
+}
+
+function closePasswordModal(){
+  state.passwordModal = null;
+  render();
+}
+
+async function submitPasswordModal(){
+  const m = state.passwordModal;
+  if(!m) return;
+
+  if(m.mode === 'create'){
+    const p1 = (m.pass1||'').trim();
+    const p2 = (m.pass2||'').trim();
+    if(p1.length < 4){ m.error = 'Password kam se kam 4 characters ka hona chahiye.'; renderPasswordModal(); return; }
+    if(p1 !== p2){ m.error = 'Dono password match nahi kar rahe.'; renderPasswordModal(); return; }
+    state.security.password = p1;
+    if(m.purpose === 'reset'){
+      await resetDataCore();
+    } else {
+      state.passwordModal = null;
+      render();
+    }
+    return;
+  }
+
+  if(m.mode === 'verify'){
+    if((m.pass1||'') !== state.security.password){
+      m.error = 'Galat password. Dobara try karein.';
+      m.pass1 = '';
+      renderPasswordModal();
+      return;
+    }
+    await resetDataCore();
+    return;
+  }
+
+  if(m.mode === 'change-verify'){
+    if((m.old||'') !== state.security.password){
+      m.error = 'Purana password galat hai.';
+      m.old = '';
+      renderPasswordModal();
+      return;
+    }
+    state.passwordModal = { mode:'create', purpose:'change', pass1:'', pass2:'', old:'', error:'' };
+    render();
+    return;
+  }
+}
+
+function renderPasswordModal(){
+  const root = document.getElementById('pwModalRoot');
+  if(!root) return;
+  const m = state.passwordModal;
+  if(!m){ root.innerHTML = ''; return; }
+
+  let title = '', body = '', submitLabel = 'Confirm';
+  if(m.mode === 'create'){
+    title = m.purpose==='reset' ? '🔒 Reset Password Banayein' : '🔒 Naya Password Banayein';
+    body = `
+      <p class="hint">Yeh password aapke Data Reset ko protect karega — isse yaad rakhein.</p>
+      <label>Naya Password (kam se kam 4 characters)</label>
+      <input type="password" id="pwInput1" value="${m.pass1 ? m.pass1.replace(/"/g,'&quot;') : ''}" autocomplete="off">
+      <label>Password Confirm Karein</label>
+      <input type="password" id="pwInput2" value="${m.pass2 ? m.pass2.replace(/"/g,'&quot;') : ''}" autocomplete="off">
+    `;
+    submitLabel = m.purpose==='reset' ? 'Set Karein aur Reset Karein' : 'Save Karein';
+  } else if(m.mode === 'verify'){
+    title = '🔒 Data Reset — Password Daalein';
+    body = `
+      <p class="hint">Sara practice data (history, records, rank, tips) permanently delete ho jaayega. Continue karne ke liye password daalein.</p>
+      <label>Password</label>
+      <input type="password" id="pwInput1" value="${m.pass1 ? m.pass1.replace(/"/g,'&quot;') : ''}" autocomplete="off">
+    `;
+    submitLabel = 'Data Reset Karein';
+  } else if(m.mode === 'change-verify'){
+    title = '🔑 Password Badlein';
+    body = `
+      <p class="hint">Pehle apna current password daalein.</p>
+      <label>Current Password</label>
+      <input type="password" id="pwOld" value="${m.old ? m.old.replace(/"/g,'&quot;') : ''}" autocomplete="off">
+    `;
+    submitLabel = 'Aage Badhein';
+  }
+
+  root.innerHTML = `
+    <div class="pw-modal-backdrop" id="pwBackdrop"></div>
+    <div class="pw-modal card">
+      <h2>${title}</h2>
+      ${body}
+      ${m.error ? `<p class="pw-error">⚠️ ${m.error}</p>` : ''}
+      <div class="pw-modal-actions">
+        <button class="btn secondary" id="pwCancelBtn">Cancel</button>
+        <button class="btn" id="pwSubmitBtn">${submitLabel}</button>
+      </div>
+    </div>
+  `;
+
+  const backdrop = document.getElementById('pwBackdrop');
+  if(backdrop) backdrop.onclick = closePasswordModal;
+  const cancelBtn = document.getElementById('pwCancelBtn');
+  if(cancelBtn) cancelBtn.onclick = closePasswordModal;
+  const submitBtn = document.getElementById('pwSubmitBtn');
+  if(submitBtn) submitBtn.onclick = submitPasswordModal;
+
+  const i1 = document.getElementById('pwInput1');
+  if(i1){
+    i1.focus();
+    i1.oninput = e=>{ m.pass1 = e.target.value; };
+    i1.onkeydown = e=>{
+      if(e.key!=='Enter') return;
+      const i2 = document.getElementById('pwInput2');
+      if(i2) i2.focus(); else submitPasswordModal();
+    };
+  }
+  const i2 = document.getElementById('pwInput2');
+  if(i2){
+    i2.oninput = e=>{ m.pass2 = e.target.value; };
+    i2.onkeydown = e=>{ if(e.key==='Enter') submitPasswordModal(); };
+  }
+  const iOld = document.getElementById('pwOld');
+  if(iOld){
+    iOld.focus();
+    iOld.oninput = e=>{ m.old = e.target.value; };
+    iOld.onkeydown = e=>{ if(e.key==='Enter') submitPasswordModal(); };
+  }
+}
+
+async function resetDataCore(){
+  try{
+    if(window.storage) await window.storage.delete(STORAGE_KEY, false);
+  }catch(e){ /* nothing saved yet — fine */ }
+  try{
+    if(typeof localStorage !== 'undefined') localStorage.removeItem(STORAGE_KEY);
+  }catch(e){ /* nothing saved yet — fine */ }
+  state.combos = { add:{}, sub:{}, mul:{}, div:{} };
+  state.records = { add:{}, sub:{}, mul:{}, div:{} };
+  state.tips = JSON.parse(JSON.stringify(DEFAULT_TIPS));
+  state.history = [];
+  state.bestRank = {};
+  state.weakFilter = 'all';
+  state.course = { unlocked:1, completed:{} };
+  state.levelProgress = {
+    add: { unlocked:1, completed:{} },
+    sub: { unlocked:1, completed:{} },
+    mul: { unlocked:1, completed:{} },
+    div: { unlocked:1, completed:{} },
+  };
+  state.expandedHistory = null;
+  state.tab = 'setup';
+  state.passwordModal = null;
+  render();
+}
+
+/* ================= EVENTS ================= */
+function bindEvents(){
+  if(state.tab==='setup'){
+    document.getElementById('opSelect').onchange = e=>{ state.settings.op = e.target.value; delete state.settings.range; render(); };
+    const rc = document.getElementById('rowCount');
+    if(rc) rc.onchange = e=>{ state.settings.rowCount = Math.max(2, Number(e.target.value)||2); render(); };
+    const da = document.getElementById('digitA');
+    if(da) da.onchange = e=>{ state.settings.digitA = Number(e.target.value); render(); };
+    const db = document.getElementById('digitB');
+    if(db) db.onchange = e=>{ state.settings.digitB = Number(e.target.value); render(); };
+    const co = document.getElementById('carryOnly');
+    if(co) co.onchange = e=>{ state.settings.carryOnly = e.target.checked; };
+    const bm = document.getElementById('blinkMode');
+    if(bm) bm.onchange = e=>{ state.settings.blinkMode = e.target.checked; };
+    document.getElementById('qCount').onchange = e=>{ state.settings.qCount = Math.max(1, Number(e.target.value)||10); };
+    document.getElementById('startBtn').onclick = ()=>{ state.courseLevel = null; state.activeLevelRun = null; delete state.settings.range; startPractice(false); };
+  }
+  if(state.tab==='customize'){
+    document.querySelectorAll('[data-speakmed]').forEach(btn=>{
+      btn.onclick = ()=>{
+        if('speechSynthesis' in window) window.speechSynthesis.cancel();
+        state.speakingActive = false; state.speakingRow = null;
+        state.speakSettings.medium = btn.dataset.speakmed;
+        state.speakSettings.voiceURI = ''; // naye medium ke liye voice list badal jaati hai, purani pasand reset karein
+        render();
+      };
+    });
+    const svs = document.getElementById('speakVoiceSelect');
+    if(svs) svs.onchange = e=>{ state.speakSettings.voiceURI = e.target.value; };
+    const pif = document.getElementById('pickIndianFemaleBtn');
+    if(pif) pif.onclick = ()=> useIndianVoice('female');
+    const pim = document.getElementById('pickIndianMaleBtn');
+    if(pim) pim.onclick = ()=> useIndianVoice('male');
+    const otib = document.getElementById('openTtsInstallBtn');
+    if(otib) otib.onclick = openTtsVoiceInstaller;
+    const srr = document.getElementById('speakRateRange');
+    if(srr) srr.oninput = e=>{ state.speakSettings.rate = Number(e.target.value); };
+    if(srr) srr.onchange = ()=> render();
+    const tsb = document.getElementById('testSpeakBtn');
+    if(tsb) tsb.onclick = speakTestPhrase;
+    const ims = document.getElementById('inputModeSelect');
+    if(ims) ims.onchange = e=>{ state.practiceCustomize.inputMode = e.target.value; render(); };
+    const cc = document.getElementById('cShowCountdown');
+    if(cc) cc.onchange = e=>{ state.practiceCustomize.showCountdown = e.target.checked; };
+    const csty = document.getElementById('countdownStyleSelect');
+    if(csty) csty.onchange = e=>{ state.practiceCustomize.countdownStyle = e.target.value; };
+    const cp = document.getElementById('cShowProgress');
+    if(cp) cp.onchange = e=>{ state.practiceCustomize.showProgress = e.target.checked; };
+    const csw = document.getElementById('cShowStopwatch');
+    if(csw) csw.onchange = e=>{ state.practiceCustomize.showStopwatch = e.target.checked; };
+    const cla = document.getElementById('cShowLiveAcc');
+    if(cla) cla.onchange = e=>{ state.practiceCustomize.showLiveAccuracy = e.target.checked; };
+    const cst = document.getElementById('cShowStreak');
+    if(cst) cst.onchange = e=>{ state.practiceCustomize.showStreak = e.target.checked; };
+    const home3 = document.getElementById('homeBtn3');
+    if(home3) home3.onclick = ()=>{ state.tab='setup'; render(); };
+  }
+  if(state.tab==='course'){
+    document.querySelectorAll('#main .rank-op-card button[data-level]').forEach(btn=>{
+      btn.onclick = ()=> startCourseLevel(Number(btn.dataset.level));
+    });
+  }
+  if(state.tab==='levels'){
+    document.querySelectorAll('.chip-btn[data-levelsop]').forEach(btn=>{
+      btn.onclick = ()=>{ state.levelsOp = btn.dataset.levelsop; render(); };
+    });
+    document.querySelectorAll('button[data-levelsop][data-levelid]').forEach(btn=>{
+      btn.onclick = ()=> startLevelTrack(btn.dataset.levelsop, Number(btn.dataset.levelid));
+    });
+  }
+  if(state.tab==='tables'){
+    const tn = document.getElementById('tableNumSelect');
+    if(tn) tn.onchange = e=>{ state.tablesSettings.tableNum = Number(e.target.value); render(); };
+    const sr = document.getElementById('squareRangeSelect');
+    if(sr) sr.onchange = e=>{ state.tablesSettings.squareRange = Number(e.target.value); render(); };
+    const cr = document.getElementById('cubeRangeSelect');
+    if(cr) cr.onchange = e=>{ state.tablesSettings.cubeRange = Number(e.target.value); render(); };
+    document.querySelectorAll('[data-tmode]').forEach(btn=>{
+      btn.onclick = ()=>{ state.tablesSettings.mode = btn.dataset.tmode; render(); };
+    });
+    document.querySelectorAll('[data-sqmode]').forEach(btn=>{
+      btn.onclick = ()=>{ state.tablesSettings.squareMode = btn.dataset.sqmode; render(); };
+    });
+    document.querySelectorAll('[data-cmode]').forEach(btn=>{
+      btn.onclick = ()=>{ state.tablesSettings.cubeMode = btn.dataset.cmode; render(); };
+    });
+    const stb = document.getElementById('startTableBtn');
+    if(stb) stb.onclick = ()=> startTablesPractice('table');
+    const ssb = document.getElementById('startSquareBtn');
+    if(ssb) ssb.onclick = ()=> startTablesPractice('sqdrill');
+    const scb = document.getElementById('startCubeBtn');
+    if(scb) scb.onclick = ()=> startTablesPractice('cbrt');
+    const spkT = document.getElementById('speakTableBtn');
+    if(spkT) spkT.onclick = ()=> speakTable(state.tablesSettings.tableNum);
+    const stopT = document.getElementById('stopSpeakBtn');
+    if(stopT) stopT.onclick = stopSpeakingTable;
+  }
+  if(state.tab==='learn'){
+    const lt = document.getElementById('learnTableSelect');
+    if(lt) lt.onchange = e=>{ state.learnSettings.tableNum = Number(e.target.value); render(); };
+    const pe = document.getElementById('powerExpSelect');
+    if(pe) pe.onchange = e=>{ state.learnSettings.powerExp = Number(e.target.value); render(); };
+    const pr = document.getElementById('powerRangeSelect');
+    if(pr) pr.onchange = e=>{ state.learnSettings.powerRange = Number(e.target.value); render(); };
+    const spkL = document.getElementById('speakTableBtn');
+    if(spkL) spkL.onclick = ()=> speakTable(state.learnSettings.tableNum);
+    const stopL = document.getElementById('stopSpeakBtn');
+    if(stopL) stopL.onclick = stopSpeakingTable;
+  }
+  if(state.tab==='gk'){
+    document.querySelectorAll('[data-gksubject]').forEach(btn=>{
+      btn.onclick = ()=>{ state.gkSettings.subject = btn.dataset.gksubject; render(); };
+    });
+    document.querySelectorAll('[data-gkmode]').forEach(btn=>{
+      btn.onclick = ()=>{ state.gkSettings.mode = btn.dataset.gkmode; render(); };
+    });
+    document.querySelectorAll('[data-gkquiz-topic]').forEach(btn=>{
+      btn.onclick = ()=> startGkQuiz(btn.dataset.gkquizSubject, Number(btn.dataset.gkquizTopic));
+    });
+    document.querySelectorAll('[data-gkopt]').forEach(btn=>{
+      btn.onclick = ()=> answerGkQuiz(Number(btn.dataset.gkopt));
+    });
+    const nextGk = document.getElementById('nextGkQuizBtn');
+    if(nextGk) nextGk.onclick = nextGkQuizQuestion;
+    const quitGk = document.getElementById('quitGkQuizBtn');
+    if(quitGk) quitGk.onclick = quitGkQuiz;
+    const retryGk = document.getElementById('retryGkQuizBtn');
+    if(retryGk) retryGk.onclick = ()=>{
+      const quiz = state.gkQuiz;
+      if(quiz) startGkQuiz(quiz.subject, quiz.topicIdx);
+    };
+  }
+  if(state.tab==='practice' && state.session){
+    const sess = state.session;
+    if(sess.countdown && sess.countdown>0){
+      const quitBtn2 = document.getElementById('quitPracticeBtn');
+      if(quitBtn2) quitBtn2.onclick = quitPractice;
+      if(countdownTickHandle) clearInterval(countdownTickHandle);
+      countdownTickHandle = setInterval(()=>{
+        if(!state.session){ clearInterval(countdownTickHandle); countdownTickHandle = null; return; }
+        state.session.countdown--;
+        if(state.session.countdown<=0){
+          clearInterval(countdownTickHandle);
+          countdownTickHandle = null;
+          state.session.countdown = 0;
+          beginQuestion(state.session); // real stopwatch (or blink flash sequence) starts only once 3-2-1 finishes
+          return;
+        }
+        render();
+      }, 700);
+      return;
+    }
+    if(sess.blinking){
+      const quitBtn3 = document.getElementById('quitPracticeBtn');
+      if(quitBtn3) quitBtn3.onclick = quitPractice;
+      return; // flash timers are already scheduled by advanceBlink; nothing else to bind while numbers are flashing
+    }
+    const q = sess.questions[sess.index];
+    const ansDigits = String(Math.abs(q.answer)).length;
+    const pc = state.practiceCustomize;
+
+    if(pc.inputMode === 'keypad'){
+      const renderAnswerDisplay = ()=>{
+        const el = document.getElementById('answerDisplay');
+        if(!el) return;
+        const val = sess.typedValue || '';
+        if(val===''){
+          el.classList.add('placeholder');
+          el.textContent = 'Jawaab likhein';
+        } else {
+          el.classList.remove('placeholder');
+          el.innerHTML = val + '<span class="answer-cursor">|</span>';
+        }
+      };
+      const checkValue = ()=>{
+        const val = (sess.typedValue||'').trim();
+        const el = document.getElementById('answerDisplay');
+        if(sess.firstKeyAt==null && val!==''){ sess.firstKeyAt = performance.now(); }
+        if(val===''){ if(el) el.classList.remove('wrong'); renderAnswerDisplay(); return; }
+        if(Number(val) === q.answer){
+          if(el) el.classList.remove('wrong');
+          submitAnswer(val); // correct -> auto moves to next question
+          return;
+        }
+        const typedDigits = val.replace('-','').length;
+        if(typedDigits >= ansDigits){
+          if(el) el.classList.add('wrong');
+          sess.liveWrong = (sess.liveWrong||0) + 1; // accuracy meter dips right away on a wrong answer
+          sess.mistakes = (sess.mistakes||0) + 1; // real fix: this question can no longer count as firstTry, so session/history/overview accuracy actually drops too
+          const liveEl = document.getElementById('liveAccMeter');
+          if(liveEl){
+            const c = sess.liveCorrect||0, w = sess.liveWrong||0, t = c+w;
+            const acc = t>0 ? (c/t)*100 : 100;
+            liveEl.style.color = acc>=90 ? 'var(--green)' : acc>=70 ? 'var(--amber)' : 'var(--red)';
+            liveEl.style.display = '';
+            liveEl.textContent = `🎯 Live Accuracy: ${acc.toFixed(0)}% (${c} sahi / ${w} galat)`;
+          }
+          renderAnswerDisplay();
+          setTimeout(()=>{
+            if(state.session === sess){
+              sess.typedValue = '';
+              const el2 = document.getElementById('answerDisplay');
+              if(el2) el2.classList.remove('wrong');
+              renderAnswerDisplay();
+            }
+          }, 400);
+        } else {
+          if(el) el.classList.remove('wrong');
+          renderAnswerDisplay();
+        }
+      };
+      const keypadPress = (key)=>{
+        if(key==='back'){ sess.typedValue = (sess.typedValue||'').slice(0,-1); }
+        else if(key==='clear'){ sess.typedValue = ''; }
+        else if(key==='enter'){ checkValue(); return; }
+        else { sess.typedValue = (sess.typedValue||'') + key; }
+        checkValue();
+      };
+      document.querySelectorAll('#keypad .keypad-btn').forEach(btn=>{
+        btn.onclick = ()=> keypadPress(btn.dataset.key);
+      });
+      const enterBtn = document.getElementById('keypadEnter');
+      if(enterBtn) enterBtn.onclick = ()=> keypadPress('enter');
+
+      // Physical keyboard also works in keypad mode, without ever focusing a real text input
+      const keydownHandler = e=>{
+        if(!state.session || state.session!==sess){ document.removeEventListener('keydown', keydownHandler); return; }
+        if(e.key>='0' && e.key<='9') keypadPress(e.key);
+        else if(e.key==='Backspace') keypadPress('back');
+        else if(e.key==='Enter') keypadPress('enter');
+        else return;
+        e.preventDefault();
+      };
+      if(practiceKeydownHandler) document.removeEventListener('keydown', practiceKeydownHandler);
+      practiceKeydownHandler = keydownHandler;
+      document.addEventListener('keydown', practiceKeydownHandler);
+    } else {
+      if(practiceKeydownHandler){ document.removeEventListener('keydown', practiceKeydownHandler); practiceKeydownHandler = null; }
+      const input = document.getElementById('answerInput');
+      if(input){
+        input.focus();
+        const checkValue = ()=>{
+          const val = input.value.trim();
+          if(sess.firstKeyAt==null && val!==''){ sess.firstKeyAt = performance.now(); }
+          if(val===''){ input.classList.remove('wrong'); return; }
+          if(Number(val) === q.answer){
+            input.classList.remove('wrong');
+            submitAnswer(val); // correct -> auto moves to next question
+            return;
+          }
+          const typedDigits = val.replace('-','').length;
+          if(typedDigits >= ansDigits){
+            input.classList.add('wrong');
+            sess.liveWrong = (sess.liveWrong||0) + 1; // accuracy meter dips right away on a wrong answer
+            sess.mistakes = (sess.mistakes||0) + 1; // real fix: this question can no longer count as firstTry, so session/history/overview accuracy actually drops too
+            const liveEl = document.getElementById('liveAccMeter');
+            if(liveEl){
+              const c = sess.liveCorrect||0, w = sess.liveWrong||0, t = c+w;
+              const acc = t>0 ? (c/t)*100 : 100;
+              liveEl.style.color = acc>=90 ? 'var(--green)' : acc>=70 ? 'var(--amber)' : 'var(--red)';
+              liveEl.style.display = '';
+              liveEl.textContent = `🎯 Live Accuracy: ${acc.toFixed(0)}% (${c} sahi / ${w} galat)`;
+            }
+            setTimeout(()=>{
+              if(document.body.contains(input)){
+                input.value = '';
+                input.classList.remove('wrong');
+                input.focus();
+              }
+            }, 400);
+          } else {
+            input.classList.remove('wrong');
+          }
+        };
+        input.oninput = checkValue;
+        input.onkeydown = e=>{ if(e.key==='Enter') checkValue(); };
+      }
+    }
+
+    if(practiceTickHandle) clearInterval(practiceTickHandle);
+    const swEl = document.getElementById('stopwatch');
+    if(swEl){
+      const fastLimit = THRESH[state.settings.op] || 5;
+      practiceTickHandle = setInterval(()=>{
+        if(!state.session || !document.body.contains(swEl)){ clearInterval(practiceTickHandle); return; }
+        const elapsed = (performance.now() - state.session.qStart)/1000;
+        swEl.textContent = formatPulse(elapsed);
+        swEl.classList.toggle('slow', elapsed > fastLimit);
+      }, 10); // 10ms tick — millisecond-level "God mode" precision
+    }
+
+    const quitBtn = document.getElementById('quitPracticeBtn');
+    if(quitBtn) quitBtn.onclick = quitPractice;
+  }
+  if(state.tab==='tips'){
+    document.getElementById('addTipBtn').onclick = ()=>{
+      const op = document.getElementById('tipOp').value;
+      const text = document.getElementById('tipText').value.trim();
+      if(text){ state.tips[op].push(text); render(); }
+    };
+    document.querySelectorAll('.delTip').forEach(btn=>{
+      btn.onclick = ()=>{
+        const op = btn.dataset.op, idx = Number(btn.dataset.idx);
+        state.tips[op].splice(idx,1);
+        render();
+      };
+    });
+  }
+  if(state.tab==='history'){
+    document.querySelectorAll('.hist-toggle').forEach(btn=>{
+      btn.onclick = ()=>{
+        const id = Number(btn.dataset.id);
+        state.expandedHistory = state.expandedHistory === id ? null : id;
+        render();
+      };
+    });
+  }
+  if(state.tab==='weak'){
+    const gm = document.getElementById('goMasterBtn');
+    if(gm) gm.onclick = ()=>{ state.courseLevel = null; state.activeLevelRun = null; startPractice(true, state.weakFilter); };
+    document.querySelectorAll('.chip-btn').forEach(btn=>{
+      btn.onclick = ()=>{ state.weakFilter = btn.dataset.filter; render(); };
+    });
+  }
+  if(state.tab==='progress'){
+    document.querySelectorAll('[data-progfilter]').forEach(btn=>{
+      btn.onclick = ()=>{ state.progressDigitFilter = btn.dataset.progfilter; render(); };
+    });
+  }
+  if(state.tab==='leaderboard'){
+    document.querySelectorAll('[data-leaderop]').forEach(btn=>{
+      btn.onclick = ()=>{ state.leaderOpFilter = btn.dataset.leaderop; render(); };
+    });
+    document.querySelectorAll('[data-leadertier]').forEach(btn=>{
+      btn.onclick = ()=>{ state.leaderTierFilter = btn.dataset.leadertier; render(); };
+    });
+  }
+  const home1 = document.getElementById('homeBtn');
+  if(home1) home1.onclick = ()=>{ state.tab='setup'; render(); };
+  const home2 = document.getElementById('homeBtn2');
+  if(home2) home2.onclick = ()=>{ state.tab='setup'; render(); };
+  const nextLevelBtn = document.getElementById('nextLevelBtn');
+  if(nextLevelBtn) nextLevelBtn.onclick = ()=> startCourseLevel(Number(nextLevelBtn.dataset.level));
+  const retryLevelBtn = document.getElementById('retryLevelBtn');
+  if(retryLevelBtn) retryLevelBtn.onclick = ()=> startCourseLevel(Number(retryLevelBtn.dataset.level));
+  const backCourseBtn = document.getElementById('backCourseBtn');
+  if(backCourseBtn) backCourseBtn.onclick = ()=>{ state.tab='course'; render(); };
+  const nextLevelTrackBtn = document.getElementById('nextLevelTrackBtn');
+  if(nextLevelTrackBtn) nextLevelTrackBtn.onclick = ()=> startLevelTrack(nextLevelTrackBtn.dataset.op, Number(nextLevelTrackBtn.dataset.level));
+  const retryLevelTrackBtn = document.getElementById('retryLevelTrackBtn');
+  if(retryLevelTrackBtn) retryLevelTrackBtn.onclick = ()=> startLevelTrack(retryLevelTrackBtn.dataset.op, Number(retryLevelTrackBtn.dataset.level));
+  const backLevelsBtn = document.getElementById('backLevelsBtn');
+  if(backLevelsBtn) backLevelsBtn.onclick = ()=>{ state.tab='levels'; render(); };
+}
+
+function bindThemeSwitcher(){
+  const dots = document.querySelectorAll('.theme-dot');
+  const apply = ()=>{
+    document.body.dataset.theme = state.theme;
+    dots.forEach(d=> d.classList.toggle('active', d.dataset.theme===state.theme));
+  };
+  dots.forEach(d=>{
+    d.onclick = ()=>{ state.theme = d.dataset.theme; apply(); };
+  });
+  apply();
+}
+
+function bindSplash(){
+  const splash = document.getElementById('splashScreen');
+  const toggle = document.getElementById('splashToggle');
+  if(!splash || !toggle) return;
+  document.body.style.overflow = 'hidden';
+  toggle.onclick = ()=>{
+    if(toggle.classList.contains('on')) return;
+    toggle.classList.add('on');
+    toggle.setAttribute('aria-checked','true');
+    setTimeout(()=>{
+      splash.classList.add('closing');
+      document.body.style.overflow = '';
+      setTimeout(()=> splash.remove(), 450);
+    }, 320);
+  };
+}
+
+(async function boot(){
+  await loadState();
+  render();
+  bindThemeSwitcher();
+  bindSplash();
+})();
+
+// Voices ki list kai browsers me thodi der baad async load hoti hai — jab load ho jaaye
+// aur user Customize screen par ho, to voice dropdown ko taaza values se dobara render karein.
+if('speechSynthesis' in window){
+  window.speechSynthesis.onvoiceschanged = ()=>{
+    if(state.tab==='customize') render();
+  };
+}
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('service-worker.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
